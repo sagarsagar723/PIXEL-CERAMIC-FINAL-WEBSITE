@@ -1,0 +1,1111 @@
+[
+  {
+    "name": "Square",
+    "code": "G/M0149",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm",
+    "sheetSize": "300x300mm",
+    "images": [
+      "Square Black chip preview",
+      "Modern kitchen/restaurant wall application"
+    ],
+    "image preview": "Square Black pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "G/M0151",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm",
+    "sheetSize": "300x300mm",
+    "images": [
+      "Square White chip preview"
+    ],
+    "image preview": "Square White pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "G/M0249",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x48mm",
+    "sheetSize": "303x303mm",
+    "images": [
+      "Square Black chip preview",
+      "Heart-shaped tea cup on black tile background"
+    ],
+    "image preview": "Square Black pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "G/M0251",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x48mm",
+    "sheetSize": "303x303mm",
+    "images": [
+      "Square White chip preview"
+    ],
+    "image preview": "Square White pattern swatch"
+  },
+  {
+    "name": "Modular Square",
+    "code": "G/MX055149",
+    "color": "Black (Mixed)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 48x48mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Modular Square Black mix chip preview",
+      "Bathroom vanity wall application"
+    ],
+    "image preview": "Modular Square Black pattern swatch"
+  },
+  {
+    "name": "Modular Square",
+    "code": "G/MX054951",
+    "color": "White (Mixed)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 48x48mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Modular Square White mix chip preview"
+    ],
+    "image preview": "Modular Square White pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "G/M0349",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "73x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Square Black chip preview"
+    ],
+    "image preview": "Square Black pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "G/M0351",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "73x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Square White chip preview",
+      "Overhead view of white tiles with bowl of grain"
+    ],
+    "image preview": "Square White pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "M0449",
+    "color": "Black",
+    "finish": "Matt",
+    "chipSize": "100x100mm",
+    "sheetSize": "306x306mm",
+    "images": [
+      "Square Black chip preview",
+      "Cactus plant against black tile wall",
+      "Modern bathroom vanity application"
+    ],
+    "image preview": "Square Black pattern swatch"
+  },
+  {
+    "name": "Square",
+    "code": "M0451",
+    "color": "White",
+    "finish": "Matt",
+    "chipSize": "100x100mm",
+    "sheetSize": "306x306mm",
+    "images": [
+      "Square White chip preview"
+    ],
+    "image preview": "Square White pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0649",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x48mm",
+    "sheetSize": "298x300mm",
+    "images": [
+      "Stack Bone Black chip preview",
+      "Bathroom backsplash with pink cabinets"
+    ],
+    "image preview": "Stack Bone Black pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0651",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x48mm",
+    "sheetSize": "298x300mm",
+    "images": [
+      "Stack Bone White chip preview"
+    ],
+    "image preview": "Stack Bone White pattern swatch"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0649",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x48mm",
+    "sheetSize": "274x298mm",
+    "images": [
+      "Brick Bone Black chip preview"
+    ],
+    "image preview": "Brick Bone Black pattern swatch"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0651",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x48mm",
+    "sheetSize": "274x298mm",
+    "images": [
+      "Brick Bone White chip preview",
+      "White brick wall with bookshelf application"
+    ],
+    "image preview": "Brick Bone White pattern swatch"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M0749",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "282x315mm",
+    "images": [
+      "Herring Bone Black chip preview"
+    ],
+    "image preview": "Herring Bone Black pattern swatch"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M0751",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "282x315mm",
+    "images": [
+      "Herring Bone White chip preview",
+      "Shower wall application with black accent"
+    ],
+    "image preview": "Herring Bone White pattern swatch"
+  },
+  {
+    "name": "Paraquet",
+    "code": "G/M0749",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Paraquet Black chip preview",
+      "Kitchen backsplash application",
+      "Open book on black tile"
+    ],
+    "image preview": "Paraquet Black pattern swatch"
+  },
+  {
+    "name": "Paraquet",
+    "code": "G/M0751",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Paraquet White chip preview"
+    ],
+    "image preview": "Paraquet White pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0749",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Stack Bone Black chip preview"
+    ],
+    "image preview": "Stack Bone Black pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0751",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x73mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Stack Bone White chip preview",
+      "White tiles with eyeglasses and case"
+    ],
+    "image preview": "Stack Bone White pattern swatch"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0849",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "286x292mm",
+    "images": [
+      "Brick Bone Black chip preview",
+      "Cafe wall application with copper lamps"
+    ],
+    "image preview": "Brick Bone Black pattern swatch"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0851",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "286x292mm",
+    "images": [
+      "Brick Bone White chip preview"
+    ],
+    "image preview": "Brick Bone White pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0849",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "285x290mm",
+    "images": [
+      "Stack Bone Black chip preview",
+      "Fireplace wall application"
+    ],
+    "image preview": "Stack Bone Black pattern swatch"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M0851",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "285x290mm",
+    "images": [
+      "Stack Bone White chip preview",
+      "White tiles with green leaves"
+    ],
+    "image preview": "Stack Bone White pattern swatch"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M0849",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "269x275mm",
+    "images": [
+      "Herring Bone Black chip preview",
+      "Kitchen wall application with wood shelf"
+    ],
+    "image preview": "Herring Bone Black pattern swatch"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M0851",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x95mm",
+    "sheetSize": "269x275mm",
+    "images": [
+      "Herring Bone White chip preview"
+    ],
+    "image preview": "Herring Bone White pattern swatch"
+  },
+  {
+    "name": "Brick Bone Beveled",
+    "code": "G0849",
+    "color": "Black",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "286x292mm",
+    "images": [
+      "Brick Bone Beveled Black chip preview",
+      "Living room wall application with basket"
+    ],
+    "image preview": "Brick Bone Beveled Pattern"
+  },
+  {
+    "name": "Brick Bone Beveled",
+    "code": "G0851",
+    "color": "White",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "286x292mm",
+    "images": [
+      "Brick Bone Beveled White chip preview"
+    ],
+    "image preview": "Brick Bone Beveled Pattern"
+  },
+  {
+    "name": "Stack Bone Beveled",
+    "code": "G0849",
+    "color": "Black",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "285x290mm",
+    "images": [
+      "Stack Bone Beveled Black chip preview"
+    ],
+    "image preview": "Stack Bone Beveled Pattern"
+  },
+  {
+    "name": "Stack Bone Beveled",
+    "code": "G0851",
+    "color": "White",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "285x290mm",
+    "images": [
+      "Stack Bone Beveled White chip preview",
+      "Wall application with coconut drink"
+    ],
+    "image preview": "Stack Bone Beveled Pattern"
+  },
+  {
+    "name": "Herring Bone Beveled",
+    "code": "G0849",
+    "color": "Black",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "269x275mm",
+    "images": [
+      "Herring Bone Beveled Black chip preview"
+    ],
+    "image preview": "Herring Bone Pattern"
+  },
+  {
+    "name": "Herring Bone Beveled",
+    "code": "G0851",
+    "color": "White",
+    "finish": "Glossy",
+    "chipSize": "45x95mm",
+    "sheetSize": "269x275mm",
+    "images": [
+      "Herring Bone Beveled White chip preview",
+      "Dining area wall application"
+    ],
+    "image preview": "Herring Bone Pattern"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0949",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x145mm",
+    "sheetSize": "285x295mm",
+    "images": [
+      "Brick Bone Black chip preview"
+    ],
+    "image preview": "Brick Bone Pattern"
+  },
+  {
+    "name": "Brick Bone",
+    "code": "G/M0951",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x145mm",
+    "sheetSize": "285x295mm",
+    "images": [
+      "Brick Bone White chip preview",
+      "White tiles with fern leaf on blue background"
+    ],
+    "image preview": "Brick Bone Pattern"
+  },
+  {
+    "name": "Paraquet",
+    "code": "G/M0949",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x145mm",
+    "sheetSize": "295x295mm",
+    "images": [
+      "Paraquet Black chip preview"
+    ],
+    "image preview": "Paraquet Pattern"
+  },
+  {
+    "name": "Paraquet",
+    "code": "G/M0951",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x145mm",
+    "sheetSize": "295x295mm",
+    "images": [
+      "Paraquet White chip preview",
+      "Kitchen backsplash application with olive cabinets"
+    ],
+    "image preview": "Paraquet Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1049",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x93mm",
+    "sheetSize": "285x296mm",
+    "images": [
+      "Stack Bone Black chip preview",
+      "Bathroom vanity wall application",
+      "Black tiles with smartphone and leaf"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1051",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x93mm",
+    "sheetSize": "285x296mm",
+    "images": [
+      "Stack Bone White chip preview"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1149",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x145mm",
+    "sheetSize": "290x300mm",
+    "images": [
+      "Stack Bone Black chip preview"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1151",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x145mm",
+    "sheetSize": "290x300mm",
+    "images": [
+      "Stack Bone White chip preview",
+      "Kitchen scene with olive green drawers"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M1249",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x48mm",
+    "sheetSize": "275x282mm",
+    "images": [
+      "Herring Bone Black chip preview",
+      "Black tiles with golden teapot and cup"
+    ],
+    "image preview": "Herring Bone Pattern"
+  },
+  {
+    "name": "Herring Bone",
+    "code": "G/M1251",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x48mm",
+    "sheetSize": "275x282mm",
+    "images": [
+      "Herring Bone White chip preview"
+    ],
+    "image preview": "Herring Bone Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1249",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x48mm",
+    "sheetSize": "292x300mm",
+    "images": [
+      "Stack Bone Black chip preview"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Stack Bone",
+    "code": "G/M1251",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "12x48mm",
+    "sheetSize": "292x300mm",
+    "images": [
+      "Stack Bone White chip preview",
+      "Kitchen backsplash with wood cutting board"
+    ],
+    "image preview": "Stack Bone Pattern"
+  },
+  {
+    "name": "Penny Rounds",
+    "code": "G/M1449",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "19mm",
+    "sheetSize": "294x313mm",
+    "images": [
+      "Penny Rounds Black chip preview",
+      "Table setting with croissant and berries"
+    ],
+    "image preview": "Penny Rounds Pattern"
+  },
+  {
+    "name": "Penny Rounds",
+    "code": "G/M1451",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "19mm",
+    "sheetSize": "294x313mm",
+    "images": [
+      "Penny Rounds White chip preview"
+    ],
+    "image preview": "Penny Rounds Pattern"
+  },
+  {
+    "name": "Penny Rounds",
+    "code": "G/M1549",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "30mm",
+    "sheetSize": "320x330mm",
+    "images": [
+      "Penny Rounds Black chip preview",
+      "Cafe interior application"
+    ],
+    "image preview": "Penny Rounds Pattern"
+  },
+  {
+    "name": "Penny Rounds",
+    "code": "G/M1551",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "30mm",
+    "sheetSize": "320x330mm",
+    "images": [
+      "Penny Rounds White chip preview"
+    ],
+    "image preview": "Penny Rounds Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "G/M1649",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x25mm",
+    "sheetSize": "255x295mm",
+    "images": [
+      "Hexagon Black chip preview"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "G/M1651",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x25mm",
+    "sheetSize": "255x295mm",
+    "images": [
+      "Hexagon White chip preview",
+      "White tiles with bathroom accessories and lavender"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "G/M1749",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "51x59mm",
+    "sheetSize": "277x322mm",
+    "images": [
+      "Hexagon Black chip preview",
+      "Boutique floor application"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "G/M1751",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "51x59mm",
+    "sheetSize": "277x322mm",
+    "images": [
+      "Hexagon White chip preview"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "M1949",
+    "color": "Black",
+    "finish": "Matt",
+    "chipSize": "95x107mm",
+    "sheetSize": "250x290mm",
+    "images": [
+      "Hexagon Black chip preview",
+      "Black tiles with yellow flowers"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Hexagon",
+    "code": "M1951",
+    "color": "White",
+    "finish": "Matt",
+    "chipSize": "95x107mm",
+    "sheetSize": "250x290mm",
+    "images": [
+      "Hexagon White chip preview"
+    ],
+    "image preview": "Hexagon Pattern"
+  },
+  {
+    "name": "Chevron",
+    "code": "M2049",
+    "color": "Black",
+    "finish": "Matt",
+    "chipSize": "45x180mm",
+    "sheetSize": "218x315mm",
+    "images": [
+      "Chevron Black chip preview"
+    ],
+    "image preview": "Chevron Pattern"
+  },
+  {
+    "name": "Chevron",
+    "code": "M2051",
+    "color": "White",
+    "finish": "Matt",
+    "chipSize": "45x180mm",
+    "sheetSize": "218x315mm",
+    "images": [
+      "Chevron White chip preview",
+      "Office wall application in black and white"
+    ],
+    "image preview": "Chevron Pattern"
+  },
+  {
+    "name": "Long Hexagon",
+    "code": "G/M2149",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x60mm",
+    "sheetSize": "245x258mm",
+    "images": [
+      "Long Hexagon Black chip preview",
+      "Wall application with bathroom towels"
+    ],
+    "image preview": "Long Hexagon Pattern"
+  },
+  {
+    "name": "Long Hexagon",
+    "code": "G/M2151",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "45x60mm",
+    "sheetSize": "245x258mm",
+    "images": [
+      "Long Hexagon White chip preview"
+    ],
+    "image preview": "Long Hexagon Pattern"
+  },
+  {
+    "name": "Long Hexagon",
+    "code": "G/M2249",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "60x95mm",
+    "sheetSize": "265x292mm",
+    "images": [
+      "Long Hexagon Black chip preview",
+      "Bathroom wall application with tub"
+    ],
+    "image preview": "Long Hexagon Pattern"
+  },
+  {
+    "name": "Long Hexagon",
+    "code": "G/M2251",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "60x95mm",
+    "sheetSize": "265x292mm",
+    "images": [
+      "Long Hexagon White chip preview",
+      "Black tiles with succulent and Rubik's cube"
+    ],
+    "image preview": "Long Hexagon Pattern"
+  },
+  {
+    "name": "Picket",
+    "code": "G/M2349",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x107mm",
+    "sheetSize": "275x300mm",
+    "images": [
+      "Picket Black chip preview",
+      "Living room application with brown leather sofa"
+    ],
+    "image preview": "Picket Pattern"
+  },
+  {
+    "name": "Picket",
+    "code": "G/M2351",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x107mm",
+    "sheetSize": "275x300mm",
+    "images": [
+      "Picket White chip preview"
+    ],
+    "image preview": "Picket Pattern"
+  },
+  {
+    "name": "Picket",
+    "code": "G/M2549",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x117mm",
+    "sheetSize": "258x288mm",
+    "images": [
+      "Picket Black chip preview",
+      "Kitchen wall application with milk and oranges"
+    ],
+    "image preview": "Picket Pattern"
+  },
+  {
+    "name": "Picket",
+    "code": "G/M2551",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x117mm",
+    "sheetSize": "258x288mm",
+    "images": [
+      "Picket White chip preview"
+    ],
+    "image preview": "Picket Pattern"
+  },
+  {
+    "name": "3D Rhombus",
+    "code": "G/M3D49",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "49x85mm",
+    "sheetSize": "265x310mm",
+    "images": [
+      "3D Rhombus Black chip preview",
+      "Restaurant wall application"
+    ],
+    "image preview": "3D Rhombus Pattern"
+  },
+  {
+    "name": "3D Rhombus",
+    "code": "G/M3D51",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "49x85mm",
+    "sheetSize": "265x310mm",
+    "images": [
+      "3D Rhombus White chip preview"
+    ],
+    "image preview": "3D Rhombus Pattern"
+  },
+  {
+    "name": "Arrow",
+    "code": "G/M2649",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "49x85mm",
+    "sheetSize": "265x299mm",
+    "images": [
+      "Arrow Black chip preview",
+      "Wall application with cloth and crystals"
+    ],
+    "image preview": "Arrow Pattern"
+  },
+  {
+    "name": "Arrow",
+    "code": "G/M2651",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "49x85mm",
+    "sheetSize": "265x299mm",
+    "images": [
+      "Arrow White chip preview"
+    ],
+    "image preview": "Arrow Pattern"
+  },
+  {
+    "name": "Octagon",
+    "code": "G/MX275149",
+    "color": "Black (Mix)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 55x55mm",
+    "sheetSize": "295x295mm",
+    "images": [
+      "Octagon Black mix chip preview"
+    ],
+    "image preview": "Octagon Pattern"
+  },
+  {
+    "name": "Octagon",
+    "code": "G/MX274951",
+    "color": "White (Mix)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 55x55mm",
+    "sheetSize": "295x295mm",
+    "images": [
+      "Octagon White mix chip preview",
+      "Floor application with notebooks"
+    ],
+    "image preview": "Octagon Pattern"
+  },
+  {
+    "name": "Octagon",
+    "code": "MX284951",
+    "color": "Black & White",
+    "finish": "Matt",
+    "chipSize": "25x25mm & 95x95mm",
+    "sheetSize": "295x295mm",
+    "images": [
+      "Octagon Black & White chip preview",
+      "Black & White tiles with camera lens",
+      "Kitchen backsplash application"
+    ],
+    "image preview": "Octagon Pattern"
+  },
+  {
+    "name": "Arabesque",
+    "code": "G/M2949",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x70mm",
+    "sheetSize": "245x285mm",
+    "images": [
+      "Arabesque Black chip preview",
+      "Modern cafe bar application"
+    ],
+    "image preview": "Arabesque Pattern"
+  },
+  {
+    "name": "Arabesque",
+    "code": "G/M2951",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x70mm",
+    "sheetSize": "245x285mm",
+    "images": [
+      "Arabesque White chip preview"
+    ],
+    "image preview": "Arabesque Pattern"
+  },
+  {
+    "name": "Arabesque",
+    "code": "G/M3049",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "57x65mm",
+    "sheetSize": "260x265mm",
+    "images": [
+      "Arabesque Black chip preview",
+      "Black tiles with telescope"
+    ],
+    "image preview": "Arabesque Pattern"
+  },
+  {
+    "name": "Arabesque",
+    "code": "G/M3051",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "57x65mm",
+    "sheetSize": "260x265mm",
+    "images": [
+      "Arabesque White chip preview"
+    ],
+    "image preview": "Arabesque Pattern"
+  },
+  {
+    "name": "Lantern",
+    "code": "G/M3149",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "42x75mm",
+    "sheetSize": "260x265mm",
+    "images": [
+      "Lantern Black chip preview"
+    ],
+    "image preview": "Lantern Pattern"
+  },
+  {
+    "name": "Lantern",
+    "code": "G/M3151",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "42x75mm",
+    "sheetSize": "260x265mm",
+    "images": [
+      "Lantern White chip preview",
+      "Table setting with blue napkin and yellow cutlery"
+    ],
+    "image preview": "Lantern Pattern"
+  },
+  {
+    "name": "Boomrange",
+    "code": "GBRG4984X454648",
+    "color": "Mixed / Patterned",
+    "finish": "Glossy",
+    "chipSize": "49x84mm",
+    "sheetSize": "300x341mm",
+    "images": [
+      "Boomrange chip preview with 3D effect",
+      "Retail store wall application",
+      "Wall application with plant"
+    ],
+    "image preview": "Boomrange Pattern"
+  },
+  {
+    "name": "Triangle",
+    "code": "G/M3349",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x80mm",
+    "sheetSize": "273x273mm",
+    "images": [
+      "Triangle Black chip preview",
+      "Living room wall application behind sofa"
+    ],
+    "image preview": "Triangle Pattern"
+  },
+  {
+    "name": "Triangle",
+    "code": "G/M3351",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x80mm",
+    "sheetSize": "273x273mm",
+    "images": [
+      "Triangle White chip preview"
+    ],
+    "image preview": "Triangle Pattern"
+  },
+  {
+    "name": "Fish Scale",
+    "code": "G/M3449",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "83x94mm",
+    "sheetSize": "292x292mm",
+    "images": [
+      "Fish Scale Black chip preview",
+      "Black tiles with hand holding cocktail glass"
+    ],
+    "image preview": "Fish Scale Pattern"
+  },
+  {
+    "name": "Fish Scale",
+    "code": "G/M3451",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "83x94mm",
+    "sheetSize": "292x292mm",
+    "images": [
+      "Fish Scale White chip preview"
+    ],
+    "image preview": "Fish Scale Pattern"
+  },
+  {
+    "name": "Tree Leaf",
+    "code": "G/M3649",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x86mm",
+    "sheetSize": "270x275mm",
+    "images": [
+      "Tree Leaf Black chip preview"
+    ],
+    "image preview": "Tree Leaf Pattern"
+  },
+  {
+    "name": "Tree Leaf",
+    "code": "G/M3651",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "48x86mm",
+    "sheetSize": "270x275mm",
+    "images": [
+      "Tree Leaf White chip preview",
+      "White tiles with vintage radio"
+    ],
+    "image preview": "Tree Leaf Pattern"
+  },
+  {
+    "name": "Pinwheel",
+    "code": "G/MX395149",
+    "color": "Black (Mix)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 23x48mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Pinwheel Black mix chip preview"
+    ],
+    "image preview": "Pinwheel Pattern"
+  },
+  {
+    "name": "Pinwheel",
+    "code": "G/MX394951",
+    "color": "White (Mix)",
+    "finish": "Glossy & Matt",
+    "chipSize": "23x23mm & 23x48mm",
+    "sheetSize": "298x298mm",
+    "images": [
+      "Pinwheel White mix chip preview",
+      "Desk accessories application",
+      "Kitchen backsplash application"
+    ],
+    "image preview": "Pinwheel Pattern"
+  },
+  {
+    "name": "Sparrow",
+    "code": "G/M4049",
+    "color": "Black",
+    "finish": "Glossy & Matt",
+    "chipSize": "36x69mm",
+    "sheetSize": "285x310mm",
+    "images": [
+      "Sparrow Black chip preview",
+      "Full wall application with line-art poster"
+    ],
+    "image preview": "Sparrow Pattern"
+  },
+  {
+    "name": "Sparrow",
+    "code": "G/M4051",
+    "color": "White",
+    "finish": "Glossy & Matt",
+    "chipSize": "36x69mm",
+    "sheetSize": "285x310mm",
+    "images": [
+      "Sparrow White chip preview"
+    ],
+    "image preview": "Sparrow Pattern"
+  }
+]
