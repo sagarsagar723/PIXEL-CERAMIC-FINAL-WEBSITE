@@ -6480,46 +6480,97 @@ body {
 }
 
 .modal-body-text h3 {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #0f172a;
-    margin: 28px 0 12px;
+    margin: 32px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-body-text h4 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 22px 0 10px;
 }
 
 .modal-body-text p {
-    font-size: 0.96rem;
+    font-size: 0.98rem;
     margin-bottom: 18px;
     color: #334155;
+    line-height: 1.8;
+}
+
+.modal-body-text strong {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.modal-body-text ul,
+.modal-body-text ol {
+    margin: 16px 0 24px 24px;
+    color: #334155;
+    line-height: 1.8;
+}
+
+.modal-body-text li {
+    font-size: 0.96rem;
+    margin-bottom: 10px;
 }
 
 .modal-quote-box {
     background: #fffbeb;
     border-left: 4px solid #c5a059;
-    padding: 16px 20px;
-    margin: 24px 0;
+    padding: 18px 24px;
+    margin: 28px 0;
     font-style: italic;
     color: #78350f;
-    border-radius: 0 6px 6px 0;
+    border-radius: 0 8px 8px 0;
+    line-height: 1.75;
+}
+
+.modal-callout-info {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 18px 24px;
+    margin: 28px 0;
+    color: #166534;
+    border-radius: 0 8px 8px 0;
+    line-height: 1.75;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin: 24px 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .modal-spec-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 24px 0;
     font-size: 0.9rem;
+    min-width: 550px;
 }
 
 .modal-spec-table th,
 .modal-spec-table td {
-    padding: 10px 14px;
+    padding: 12px 16px;
     border: 1px solid #e2e8f0;
     text-align: left;
+    line-height: 1.5;
 }
 
 .modal-spec-table th {
     background: #f8fafc;
     color: #0f172a;
     font-weight: 700;
+}
+
+.modal-spec-table tr:nth-child(even) td {
+    background: #f8fafc;
 }
 
 .modal-spec-table td {
@@ -7700,8 +7751,8 @@ body {
 .sf-finishes-grid:has(.sf-finish-card:only-child) .sf-swatches-grid.single-swatch .sf-swatch-item {
     width: 100%;
     max-width: 540px;
-    aspect-ratio: 16 / 10;
-    min-height: 200px;
+    aspect-ratio: 540 / 280;
+    height: auto;
     max-height: 280px;
     margin-left: auto;
     margin-right: auto;
@@ -7715,9 +7766,9 @@ body {
     .sf-finishes-grid.single-card .sf-swatches-grid.single-swatch .sf-swatch-item,
     .sf-finishes-grid:has(.sf-finish-card:only-child) .sf-swatches-grid.single-swatch .sf-swatch-item {
         max-width: 100%;
-        aspect-ratio: 16 / 10;
-        min-height: 180px;
-        max-height: 260px;
+        aspect-ratio: 540 / 280;
+        height: auto;
+        max-height: 280px;
     }
 }
 
@@ -7892,9 +7943,9 @@ body {
     position: relative;
     border-radius: 10px;
     overflow: hidden;
-    aspect-ratio: 16 / 10;
-    min-height: 180px;
-    max-height: 260px;
+    aspect-ratio: 540 / 280;
+    width: 100%;
+    max-height: 280px;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
     cursor: pointer;
@@ -7904,8 +7955,8 @@ body {
 
 .sf-swatches-grid.single-swatch .sf-swatch-item,
 .sf-swatches-grid:has(.sf-swatch-item:only-child) .sf-swatch-item {
-    aspect-ratio: 16 / 10;
-    min-height: 180px;
+    aspect-ratio: 540 / 280;
+    width: 100%;
     max-height: 280px;
 }
 

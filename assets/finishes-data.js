@@ -565,7 +565,7 @@ window.SIZE_FINISHES_DATA = {
         "catalogueName": "120x240 cm (48x96 Inch) Monumental Slabs Catalogue",
         "categoryLabel": "Monumental Sintered Porcelain Slabs",
         "badgeClass": "pill-slab",
-        "description": "Available in Polished Mirror Glaze and Velvet Suede Silk Matt finishes. Displaying preview designs for each finish below.",
+        "description": "Available in 5 specialized slab collections and architectural finishes. Displaying preview designs for each finish below.",
         "specs": {
             "format": "1200 x 2400 mm (48x96 Inch / 4x8 Ft)",
             "thickness": "9.0 mm & 6.0 mm Slim Slab",
@@ -576,12 +576,35 @@ window.SIZE_FINISHES_DATA = {
         },
         "finishes": [
             {
-                "name": "Polished Sintered Stone (Mirror Glaze)",
+                "key": "CARVING COLLECTION",
+                "folder": "carving_collection",
+                "name": "Carving Collection",
+                "icon": "fa-solid fa-fingerprint",
+                "glossLevel": "Tactile Vein-Embossed Carving",
+                "finishBadge": "Carving Finish",
+                "folderName": "CARVING COLLECTION",
+                "texture": "Synchronized Vein Micro-Carving",
+                "slipRating": "R10 (Architectural Slip-Resistant)",
+                "trafficRating": "PEI IV (Scratch Immune)",
+                "stainResistance": "Class 5 (Sealed Glaze)",
+                "summary": "Synchronized tactile vein embossing that follows continuous marble patterns with 3D tactile depth under grazing light.",
+                "bestFor": "Luxury Feature Backdrop Walls, Master Bathrooms, Villa Foyers, Executive Boardrooms",
+                "swatches": [
+                    {
+                        "name": "Irox Verde",
+                        "image": "assets/view-range-collection/120x240_cm/carving_collection/IROX VERDE 120X240 CM CARVING FINISH PREVIEW CLOSEUP 2.jpg"
+                    }
+                ]
+            },
+            {
+                "key": "GLOSSY COLLECTION",
+                "folder": "glossy_collection",
+                "name": "Glossy Collection",
                 "icon": "fa-solid fa-gem",
                 "glossLevel": "Mirror High Gloss (95+ GU)",
                 "finishBadge": "Glossy Finish",
-                "folderName": "POLISHED SLABS",
-                "texture": "Ultra-Flat Continuous Diamond Polish",
+                "folderName": "GLOSSY COLLECTION",
+                "texture": "Ultra-Smooth Continuous Diamond Polish",
                 "slipRating": "R9 (Interior Floor & Cladding)",
                 "trafficRating": "PEI IV (Heavy Commercial)",
                 "stainResistance": "Class 5 (Impervious Sintered Body)",
@@ -589,21 +612,40 @@ window.SIZE_FINISHES_DATA = {
                 "bestFor": "Kitchen Countertops, Large Format Island Facades, Bathroom Cladding, Commercial Lobbies",
                 "swatches": [
                     {
-                        "name": "Afyon Onyx",
-                        "image": "assets/slabs/AFYO ONYX 120X120 CM 100X100 CM GLOSSY FINISH.jpg"
-                    },
-                    {
-                        "name": "Classic White Onyx",
-                        "image": "assets/view-range-collection/80x160_cm/glossy_finish/CLASSIC WHITE ONYX 800X1600 GLOSSY FINISH PREVIEW.jpg"
+                        "name": "Paredise Grey",
+                        "image": "assets/view-range-collection/120x240_cm/glossy_collection/PAREDISE GREY 120X240 CM GLOSSY FINISH PREVIEW 1.jpg"
                     }
                 ]
             },
             {
-                "name": "Velvet Suede Leather Touch (Silk Matt)",
+                "key": "MATT COLLECTION",
+                "folder": "matt_collection",
+                "name": "Matt Collection",
                 "icon": "fa-solid fa-cube",
-                "glossLevel": "Honed Leather Silk Matt (8-12 GU)",
+                "glossLevel": "Architectural Natural Matt (10-15 GU)",
                 "finishBadge": "Matt Finish",
-                "folderName": "MATT SLABS",
+                "folderName": "MATT COLLECTION",
+                "texture": "Fine Micro-Texture Satin Touch",
+                "slipRating": "R10 (Safe All-Zone Wet & Dry)",
+                "trafficRating": "PEI V (Maximum Wear Resistance)",
+                "stainResistance": "Class 5 (Non-Porous Glaze)",
+                "summary": "Calming architectural satin matt surface with rich mineral depth and glare-free sophistication.",
+                "bestFor": "Modern Open Living, Kitchen Islands, Commercial Atriums, Luxury Restrooms",
+                "swatches": [
+                    {
+                        "name": "Atlantis Gold",
+                        "image": "assets/view-range-collection/120x240_cm/matt_collection/ATLANTIS GOLD 120X240 CM MATT FINISH PREVIEW CLOSEUP 2.jpg"
+                    }
+                ]
+            },
+            {
+                "key": "SATIN MATT COLLECTION",
+                "folder": "satin_matt_collection",
+                "name": "Satin Matt Collection",
+                "icon": "fa-solid fa-feather",
+                "glossLevel": "Velvety Silk Satin Matt",
+                "finishBadge": "Satin Matt Finish",
+                "folderName": "SATIN MATT COLLECTION",
                 "texture": "Warm Micro-Textured Leather / Honed Finish",
                 "slipRating": "R10 (Safe Architectural Grip)",
                 "trafficRating": "PEI V (Maximum Scratch Proof)",
@@ -612,12 +654,29 @@ window.SIZE_FINISHES_DATA = {
                 "bestFor": "Dining Table Tops, Bathroom Vanity Walls, Fireplace Surrounds, Exterior Facades",
                 "swatches": [
                     {
-                        "name": "Ameliya Light Grey",
-                        "image": "assets/slabs/AAMELIYA LIGHT GREY 120X120 CM 100X100 CM MATT FINISH.jpg"
-                    },
+                        "name": "Carrara Natural",
+                        "image": "assets/view-range-collection/120x240_cm/satin_matt_collection/CARRARA NATURAL 120X240 CM SATIN MATT FINISH PREVIEW CLOSEUP 2.jpg"
+                    }
+                ]
+            },
+            {
+                "key": "SUPER GLOSSY COLLECTION",
+                "folder": "super_glossy_collection",
+                "name": "Super Glossy Collection",
+                "icon": "fa-solid fa-wand-magic-sparkles",
+                "glossLevel": "Super High Gloss Mirror (98+ GU)",
+                "finishBadge": "Super Glossy Finish",
+                "folderName": "SUPER GLOSSY COLLECTION",
+                "texture": "Deep Liquid Glass Refraction",
+                "slipRating": "R9 (Lobby & Interior Dry)",
+                "trafficRating": "PEI IV (Scratch Resistant)",
+                "stainResistance": "Class 5 (Impermeable Nano Shield)",
+                "summary": "Double-layer crystal glass glaze offering ultimate mirror reflection and saturated dark & exotic stone tones.",
+                "bestFor": "Penthouse Receptions, Designer Salons, High-End Feature Walls, Hotel Lounges",
+                "swatches": [
                     {
-                        "name": "Alluminate Beige",
-                        "image": "assets/view-range-collection/80x160_cm/matt_finish/ALLUMINATE BEIGE 800X1600 MM MATT finish PREVIEW.jpg"
+                        "name": "Madagascar Blue",
+                        "image": "assets/view-range-collection/120x240_cm/super_glossy_collection/MADAGASCAR BLUE 120X240 CM PREVIEW CLOSEUP 2.jpg"
                     }
                 ]
             }

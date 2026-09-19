@@ -680,7 +680,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const plank25x50Items = typeof PLANK_25X50_DATA !== 'undefined' ? PLANK_25X50_DATA : [];
     const plank20x60Items = typeof PLANK_20X60_DATA !== 'undefined' ? PLANK_20X60_DATA : [];
     const plank60x120Items = typeof PLANK_60X120_DATA !== 'undefined' ? PLANK_60X120_DATA : [];
-    const rawProducts = baseFiltered.concat(woodItems).concat(mosaicItems).concat(plank30x90Items).concat(plank20x20Items).concat(plank15x90Items).concat(plankSlabsItems).concat(plank25x50Items).concat(plank20x60Items).concat(plank60x120Items);
+    const plank120x240Items = typeof PLANK_120X240_DATA !== 'undefined' ? PLANK_120X240_DATA : [];
+    const rawProducts = baseFiltered.concat(woodItems).concat(mosaicItems).concat(plank30x90Items).concat(plank20x20Items).concat(plank15x90Items).concat(plankSlabsItems).concat(plank25x50Items).concat(plank20x60Items).concat(plank60x120Items).concat(plank120x240Items);
 
     function convertSizeToCm(sizeStr) {
         if (!sizeStr) return "";
@@ -1641,11 +1642,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const message = document.getElementById('contactMessage').value;
             const interests = selectedInterestsInput ? selectedInterestsInput.value : '';
 
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
             // Form validation
-            if (!name || !email || !phone || !country || !volume || !message) {
+            if (!name || !company || !email || !emailRegex.test(email) || !phone || !country || !volume || !message) {
                 formFeedback.style.display = 'block';
                 formFeedback.className = 'form-feedback error';
-                formFeedback.textContent = 'Please fill out all required fields (including Destination Country and expected cargo volume).';
+                if (email && !emailRegex.test(email)) {
+                    formFeedback.textContent = 'Please enter a valid corporate email address (e.g., name@company.com).';
+                } else {
+                    formFeedback.textContent = 'Please fill out all required fields: Your Name, Company Name, Corporate Email, Phone / Mobile, Destination Country, and Expected Order Volume.';
+                }
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnHtml;
                 return;

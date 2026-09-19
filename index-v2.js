@@ -450,7 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const plank60x120Items = typeof PLANK_60X120_DATA !== 'undefined' ? PLANK_60X120_DATA : [];
     const porcelainDualItems = typeof PORCELAIN_60X60_60X120_DATA !== 'undefined' ? PORCELAIN_60X60_60X120_DATA : [];
     const subwayItems = typeof SUBWAY_CATALOG_DATA !== 'undefined' ? SUBWAY_CATALOG_DATA : [];
-    const rawProducts = baseFiltered.concat(woodItems).concat(mosaicItems).concat(plank30x90Items).concat(plank20x20Items).concat(plank15x90Items).concat(plankSlabsItems).concat(plank25x50Items).concat(plank20x60Items).concat(plank60x120Items).concat(porcelainDualItems).concat(subwayItems);
+    const plank120x240Items = typeof PLANK_120X240_DATA !== 'undefined' ? PLANK_120X240_DATA : [];
+    const rawProducts = baseFiltered.concat(woodItems).concat(mosaicItems).concat(plank30x90Items).concat(plank20x20Items).concat(plank15x90Items).concat(plankSlabsItems).concat(plank25x50Items).concat(plank20x60Items).concat(plank60x120Items).concat(porcelainDualItems).concat(subwayItems).concat(plank120x240Items);
 
     function convertSizeToCm(sizeStr) {
         if (!sizeStr) return "";
@@ -941,6 +942,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Normalized finish matching helper
+        function checkFinishMatch(productFinishStr, selectedFinishValues) {
+            if (!productFinishStr || !selectedFinishValues || selectedFinishValues.length === 0) return false;
+            const prodFinishes = productFinishStr.split('/').map(f => f.trim().toLowerCase());
+            return selectedFinishValues.some(selected => {
+                const sel = selected.toLowerCase().trim();
+                return prodFinishes.some(pf => {
+                    if (pf === sel) return true;
+                    if (sel === 'satin' && pf.includes('satin')) return true;
+                    if (sel === 'carving' && pf.includes('carving')) return true;
+                    if (sel === 'punch-matt' && pf.includes('punch-matt')) return true;
+                    if (sel === 'digi-matt' && pf.includes('digi-matt')) return true;
+                    if (sel === 'lux-surface' && (pf.includes('lux') || pf.includes('high-gloss') || pf.includes('super-glossy') || pf.includes('super highgloss'))) return true;
+                    if (sel === 'textured' && (pf.includes('textured') || pf.includes('rustic') || pf.includes('structure'))) return true;
+                    if (sel === 'polished' && (pf.includes('polished') || pf.includes('glossy'))) return true;
+                    if (sel === 'matt' && pf.includes('matt') && !pf.includes('punch-matt') && !pf.includes('digi-matt') && !pf.includes('satin')) return true;
+                    return false;
+                });
+            });
+        }
+
         // Render matching products dynamically
         function renderCatalog() {
             catalogGrid.innerHTML = '';
@@ -963,9 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 return false;
                             }
                         } else if (group === 'finish') {
-                            const productFinishes = product.finish ? product.finish.split('/').map(f => f.trim().toLowerCase()) : [];
-                            const hasMatchingFinish = productFinishes.some(f => selectedValues.includes(f));
-                            if (!hasMatchingFinish) {
+                            if (!checkFinishMatch(product.finish, selectedValues)) {
                                 return false;
                             }
                         } else {
@@ -1303,9 +1323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 return false;
                             }
                         } else if (group === 'finish') {
-                            const productFinishes = product.finish ? product.finish.split('/').map(f => f.trim().toLowerCase()) : [];
-                            const hasMatchingFinish = productFinishes.some(f => selectedValues.includes(f));
-                            if (!hasMatchingFinish) {
+                            if (!checkFinishMatch(product.finish, selectedValues)) {
                                 return false;
                             }
                         } else {
@@ -1335,7 +1353,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (currentGroup === 'finish') {
                         if (p.finish) {
                             p.finish.split('/').forEach(f => {
-                                validValues.add(f.trim().toLowerCase());
+                                const cleanF = f.trim().toLowerCase();
+                                validValues.add(cleanF);
+                                if (cleanF.includes('satin')) validValues.add('satin');
+                                if (cleanF.includes('carving')) validValues.add('carving');
+                                if (cleanF.includes('punch-matt')) validValues.add('punch-matt');
+                                if (cleanF.includes('digi-matt')) validValues.add('digi-matt');
+                                if (cleanF.includes('lux') || cleanF.includes('high-gloss') || cleanF.includes('super-glossy') || cleanF.includes('super highgloss')) validValues.add('lux-surface');
+                                if (cleanF.includes('textured') || cleanF.includes('rustic') || cleanF.includes('structure')) validValues.add('textured');
+                                if (cleanF.includes('polished') || cleanF.includes('glossy')) validValues.add('polished');
+                                if (cleanF.includes('matt') && !cleanF.includes('punch-matt') && !cleanF.includes('digi-matt') && !cleanF.includes('satin')) validValues.add('matt');
                             });
                         }
                     } else {
@@ -1505,11 +1532,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const paramValue = urlParams.get(group);
                 if (paramValue) {
                     const cleanVal = paramValue.toLowerCase().trim();
-                    const checkbox = document.querySelector(`.catalog-sidebar input[name="${group}"][value="${cleanVal}"]`);
+                    let checkbox = document.querySelector(`.catalog-sidebar input[name="${group}"][value="${cleanVal}"]`);
+                    if (!checkbox && group === 'size') {
+                        checkbox = document.querySelector(`.catalog-sidebar input[name="size"][value="${cleanVal} cm"]`);
+                    }
                     if (checkbox) {
                         checkbox.checked = true;
-                        if (!activeFilters[group].includes(cleanVal)) {
-                            activeFilters[group].push(cleanVal);
+                        const actualVal = checkbox.value;
+                        if (!activeFilters[group].includes(actualVal)) {
+                            activeFilters[group].push(actualVal);
                         }
                         hasUrlFilters = true;
 
@@ -1667,10 +1698,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pre-fill query parameters (e.g. ?product=Emerald%20Glossy%20Porcelain%20Subway)
         const urlParams = new URLSearchParams(window.location.search);
         const urlProduct = urlParams.get('product');
+        const urlName = urlParams.get('name');
+        const urlCompany = urlParams.get('company');
+        const urlEmail = urlParams.get('email');
+        const urlPhone = urlParams.get('phone');
+        const urlCountry = urlParams.get('country');
+        const urlCountryCode = urlParams.get('country_code');
+        const urlMessage = urlParams.get('message');
+
+        if (urlName && document.getElementById('contactName')) document.getElementById('contactName').value = urlName;
+        if (urlCompany && document.getElementById('contactCompany')) document.getElementById('contactCompany').value = urlCompany;
+        if (urlEmail && document.getElementById('contactEmail')) document.getElementById('contactEmail').value = urlEmail;
+        if (urlPhone && document.getElementById('contactPhone')) document.getElementById('contactPhone').value = urlPhone;
+        if (urlCountryCode && document.getElementById('contactCountryCode')) document.getElementById('contactCountryCode').value = urlCountryCode;
+        if (urlCountry && document.getElementById('contactCountry')) document.getElementById('contactCountry').value = urlCountry;
+        if (urlMessage && document.getElementById('contactMessage')) document.getElementById('contactMessage').value = urlMessage;
 
         if (urlProduct) {
             const messageTextarea = document.getElementById('contactMessage');
-            if (messageTextarea) {
+            if (messageTextarea && !urlMessage) {
                 messageTextarea.value = `Hello, I am interested in getting a wholesale catalog, pricing details, and packing specifications for: ${decodeURIComponent(urlProduct)}.`;
             }
 
@@ -1699,36 +1745,92 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Real-time error clearance on input/change
+        inquiryForm.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                const fg = input.closest('.form-group');
+                if (fg) fg.classList.remove('has-error');
+            });
+            input.addEventListener('change', () => {
+                const fg = input.closest('.form-group');
+                if (fg) fg.classList.remove('has-error');
+            });
+        });
+
         inquiryForm.addEventListener('submit', (e) => {
             e.preventDefault();
+
+            // Clear previous errors
+            inquiryForm.querySelectorAll('.form-group').forEach(fg => fg.classList.remove('has-error'));
+
+            // Gather inputs for validation & simulation
+            const nameEl = document.getElementById('contactName');
+            const companyEl = document.getElementById('contactCompany');
+            const emailEl = document.getElementById('contactEmail');
+            const countryCodeEl = document.getElementById('contactCountryCode');
+            const phoneEl = document.getElementById('contactPhone');
+            const countryEl = document.getElementById('contactCountry');
+            const volumeEl = document.getElementById('contactVolume');
+            const messageEl = document.getElementById('contactMessage');
+
+            const name = nameEl ? nameEl.value.trim() : '';
+            const company = companyEl ? companyEl.value.trim() : '';
+            const email = emailEl ? emailEl.value.trim() : '';
+            const countryCode = countryCodeEl ? countryCodeEl.value.trim() : '';
+            const phone = phoneEl ? phoneEl.value.trim() : '';
+            const country = countryEl ? countryEl.value.trim() : '';
+            const volume = volumeEl ? volumeEl.value.trim() : '';
+            const message = messageEl ? messageEl.value.trim() : '';
+            const interests = selectedInterestsInput ? selectedInterestsInput.value : '';
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let hasError = false;
+
+            if (!name) {
+                if (nameEl) nameEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!company) {
+                if (companyEl) companyEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!email || !emailRegex.test(email)) {
+                if (emailEl) emailEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!phone || !countryCode) {
+                if (phoneEl) phoneEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!country) {
+                if (countryEl) countryEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!volume) {
+                if (volumeEl) volumeEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!message) {
+                if (messageEl) messageEl.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+
+            if (hasError) {
+                formFeedback.style.display = 'block';
+                formFeedback.className = 'form-feedback error';
+                if (email && !emailRegex.test(email)) {
+                    formFeedback.textContent = 'Please enter a valid corporate email address (e.g., name@company.com).';
+                } else {
+                    formFeedback.textContent = 'Please fill out all required fields: Your Name, Company Name, Corporate Email, Phone / Mobile, Destination Country, and Expected Order Volume.';
+                }
+                return;
+            }
 
             // Disable button and show sending state
             const submitBtn = inquiryForm.querySelector('button[type="submit"]');
             const originalBtnHtml = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Sending Inquiry <i class="fa-solid fa-spinner fa-spin ml-6"></i>';
-
-            // Gather inputs for simulation
-            const name = document.getElementById('contactName').value;
-            const company = document.getElementById('contactCompany') ? document.getElementById('contactCompany').value : '';
-            const email = document.getElementById('contactEmail').value;
-            const countryCode = document.getElementById('contactCountryCode') ? document.getElementById('contactCountryCode').value : '';
-            const phone = document.getElementById('contactPhone').value;
-            const country = document.getElementById('contactCountry').value;
-            const volume = document.getElementById('contactVolume').value;
-            const message = document.getElementById('contactMessage').value;
-            const interests = selectedInterestsInput ? selectedInterestsInput.value : '';
-            const fullPhone = countryCode ? `${countryCode} ${phone}` : phone;
-
-            // Form validation
-            if (!name || !email || !phone || !countryCode || !country || !volume || !message) {
-                formFeedback.style.display = 'block';
-                formFeedback.className = 'form-feedback error';
-                formFeedback.textContent = 'Please fill out all required fields (including Country Code, Mobile Number, Destination Country, and expected cargo volume).';
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnHtml;
-                return;
-            }
 
             // Simulate server request delay (1.2s latency)
             setTimeout(() => {
@@ -2421,262 +2523,1327 @@ const BLOG_ARTICLES_DATA = {
         category: "Architecture & Design",
         categoryClass: "pill-arch",
         date: "September 2026",
-        readTime: "6 min read",
-        author: "Pixel Ceramic Technical Editorial (Morbi R&D)",
-        image: "assets/slider/1. Architectural surfaces engineered for spaces.jpg",
-        lead: "Sintered porcelain slabs represent the pinnacle of modern ceramic engineering, bridging the gap between natural stone aesthetics and indestructible architectural performance.",
+        readTime: "12 min read",
+        author: "Pixel Ceramic Technical Editorial (Morbi R&D Division)",
+        image: "assets/blog/blog-sintered-slabs.jpg",
+        lead: "Sintered porcelain slabs represent the vanguard of contemporary architectural surfaces—uniting the sublime aesthetics of monumental metamorphic marble with an impermeable, high-density mineral matrix engineered for ventilated rainscreens, extreme thermal cycling, and high-traffic commercial environments.",
         content: `
-            <h3>1. The Metallurgy & Firing Science of Sintered Stone</h3>
-            <p>Unlike conventional ceramics pressed at 3,000 to 5,000 tonnes, Pixel Ceramic's monumental slabs are formed using continuous compaction systems exerting over 16,000 tonnes of hydraulic pressure. The atomized mineral body—comprising high-purity kaolin clay, feldspar, quartz, and zirconium opacifiers—is fired in computer-controlled roller kilns exceeding 1,220°C.</p>
-            <p>This thermal transformation fuses the mineral particles at a microscopic level, producing a virtually impermeable matrix with a water absorption rate under <strong>0.05% (ISO 10545-3)</strong>.</p>
-            
-            <div class="modal-quote-box">
-                "By eliminating macroscopic pore structures, sintered slabs achieve complete resistance to frost, thermal shock, UV degradation, and chemical staining."
-            </div>
+<h3>1. The Evolution of Mega-Format Architectural Sintered Stone</h3>
+        <p>Over the past decade, architectural engineering has undergone a transformative paradigm shift. For centuries, specifiers seeking monumental luxury in corporate atriums, luxury hotels, and civic facades were constrained to natural dimensional stone—such as Carrara, Calacatta, and Statuario marbles, or crystalline granites. While natural stone provides peerless organic beauty, its inherent vulnerabilities—including irregular geological fissures, open micro-porosity (often exceeding 0.5% to 3.0%), susceptibility to acid etching, thermal expansion instability, and immense structural dead weight (50 to 80 kg/m² for 20mm to 30mm slabs)—have long posed engineering headaches for structural engineers and façade consultants.</p>
+        <p>The advent of engineered sintered porcelain slabs has bridged the divide between sublime geological aesthetics and structural indestructibility. Unlike traditional ceramic tiles manufactured using intermittent toggle presses at 3,000 to 5,000 tonnes, Pixel Ceramic's monumental slabs (spanning formats up to 1200x2400 mm and 1200x1800 mm) are fabricated via continuous roll-compaction compaction systems exerting over <strong>16,000 to 25,000 tonnes</strong> of uniform hydraulic force across the moving atomized powder bed. This process, coupled with firing cycles exceeding 1,220°C in computer-monitored roller kilns, achieves total mineral vitrification and complete pore closure.</p>
 
-            <h3>2. Key Engineering Specifications</h3>
+        <div class="modal-quote-box">
+            "Sintering is artificial metamorphism accelerated into minutes: by subjecting refined natural minerals to thousands of bars of pressure and thermal vitrification, we create a stone that nature takes millions of years to form, devoid of natural fissures or moisture channels."
+        </div>
+
+        <h3>2. The Physics of Sintering: Raw Materials & Pyrochemical Transformation</h3>
+        <p>To understand the structural superiority of sintered porcelain slabs, one must examine the raw material geochemistry and thermal vitrification curve. Pixel Ceramic utilizes an ultra-refined, wet-milled mineral batch formulated to rigorous purity tolerances:</p>
+        <ul>
+            <li><strong>Kaolinitic Clays (40%–45%):</strong> Provide exceptional plasticity, high green strength prior to firing, and furnish the alumina (Al₂O₃) skeleton that ensures structural rigidity and high modulus of rupture under mechanical deflection.</li>
+            <li><strong>Potassium & Sodium Feldspars (35%–40%):</strong> Act as powerful pyrochemical fluxing agents. At temperatures above 1,140°C, feldspars liquefy into a viscous glassy phase that flows into every interstitial space between quartz grains, pulling them together through capillary attraction.</li>
+            <li><strong>High-Purity Silica Quartz (15%–20%):</strong> Functions as the structural structural aggregate, providing exceptional Mohs surface hardness (Grade 7 to 8) and resistance to scratching from diamond abrasives, footwear grit, and cutlery.</li>
+            <li><strong>Zirconium Silicate & Micronized Mineral Pigments (2%–5%):</strong> Provide dense opacity, pristine white base coloration, and deep through-body chromatic stability that remains 100% unaffected by ultraviolet (UV) radiation or thermal oxidation.</li>
+        </ul>
+        <p>During the 70-minute firing cycle within our 240-meter energy-recuperating kilns, the mineral particles undergo liquid-phase sintering. As the feldspathic melt cools, primary and secondary mullite crystals (3Al₂O₃·2SiO₂) precipitate throughout the matrix. This interlocking crystalline needle network acts like microscopic structural rebar, yielding a material with practically zero open porosity (water absorption &le; 0.05% according to <strong>ISO 10545-3</strong>) and flexural strength exceeding <strong>48 to 55 N/mm²</strong>.</p>
+
+        <h3>3. Comprehensive Technical Specification Matrix</h3>
+        <p>When preparing architectural submittals, façade calculations, or interior performance schedules, mechanical properties must be validated against international testing standards. The table below delineates Pixel Ceramic's tested performance versus ISO 13006 / EN 14411 Group BIa benchmarks and natural marble:</p>
+
+        <div class="table-responsive">
             <table class="modal-spec-table">
                 <thead>
                     <tr>
                         <th>Technical Parameter</th>
                         <th>Standard Method</th>
-                        <th>Pixel Sintered Slab Value</th>
+                        <th>Pixel Sintered Slab (6mm & 9mm)</th>
+                        <th>ISO 13006 Group BIa Standard</th>
+                        <th>Natural Calacatta Marble (20mm)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Water Absorption</td>
-                        <td>ISO 10545-3</td>
-                        <td>&le; 0.05% (Group BIa)</td>
+                        <td><strong>Water Absorption</strong></td>
+                        <td>ISO 10545-3 / ASTM C373</td>
+                        <td>&le; 0.05% (Impermeable)</td>
+                        <td>&le; 0.50%</td>
+                        <td>0.30% &ndash; 1.50% (Porous)</td>
                     </tr>
                     <tr>
-                        <td>Modulus of Rupture</td>
+                        <td><strong>Modulus of Rupture (MOR)</strong></td>
                         <td>ISO 10545-4</td>
-                        <td>&ge; 48 N/mm&sup2;</td>
+                        <td>&ge; 50 N/mm&sup2;</td>
+                        <td>&ge; 35 N/mm&sup2;</td>
+                        <td>9 &ndash; 14 N/mm&sup2;</td>
                     </tr>
                     <tr>
-                        <td>Mohs Surface Hardness</td>
-                        <td>EN 101</td>
+                        <td><strong>Breaking Strength</strong></td>
+                        <td>ISO 10545-4 / ASTM C648</td>
+                        <td>&ge; 2,400 N (9mm slab)</td>
+                        <td>&ge; 1,300 N</td>
+                        <td>1,200 &ndash; 1,800 N (Fragile)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mohs Surface Hardness</strong></td>
+                        <td>EN 101 / Mohs Scale</td>
                         <td>Grade 7 &ndash; 8</td>
+                        <td>Min Grade 5</td>
+                        <td>Grade 3 &ndash; 4 (Easily scratched)</td>
                     </tr>
                     <tr>
-                        <td>Thermal Shock Resistance</td>
+                        <td><strong>Deep Abrasion Resistance</strong></td>
+                        <td>ISO 10545-6</td>
+                        <td>&le; 125 mm&sup3; volume loss</td>
+                        <td>&le; 175 mm&sup3;</td>
+                        <td>High wear / etching risk</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thermal Shock Resistance</strong></td>
                         <td>ISO 10545-9</td>
                         <td>Fully Resistant (&Delta;T = 150&deg;C)</td>
+                        <td>Passes test</td>
+                        <td>Prone to spalling & micro-cracking</td>
                     </tr>
                     <tr>
-                        <td>UV & Color Fastness</td>
-                        <td>DIN 51094</td>
-                        <td>100% Unaffected by UV Radiation</td>
+                        <td><strong>Chemical & Stain Resistance</strong></td>
+                        <td>ISO 10545-13 & 14</td>
+                        <td>Class UHA / Class 5 (Stain-proof)</td>
+                        <td>Min Class UB</td>
+                        <td>Reacts instantly with acids (Etching)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Linear Thermal Expansion</strong></td>
+                        <td>ISO 10545-8</td>
+                        <td>&le; 6.2 &times; 10&minus;&sup6; K&minus;&sup1;</td>
+                        <td>Declared value</td>
+                        <td>8.5 &ndash; 12.0 &times; 10&minus;&sup6; K&minus;&sup1;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fire Reaction Rating</strong></td>
+                        <td>EN 13501-1 / ASTM E84</td>
+                        <td>Class A1 / Flame Spread 0 (Non-combustible)</td>
+                        <td>Class A1</td>
+                        <td>Class A1 (calcines at high temp)</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
 
-            <h3>3. Ventilated Facades & Exterior Cladding Applications</h3>
-            <p>For large-scale commercial buildings and hospitality towers, our 6mm and 9mm sintered slabs reduce structural dead load by up to 60% compared to 20mm granite or marble cladding. When paired with open-joint aluminum subframe anchors, these surfaces provide superior thermal insulation and acoustic dampening while resisting high wind loads.</p>
+        <h3>4. Ventilated Curtain Wall Façades: Structural Engineering & Subframe Anchoring</h3>
+        <p>One of the most rapidly growing applications for 6mm and 9mm sintered porcelain slabs is in high-performance exterior ventilated curtain walls (rainscreens). A ventilated façade separates the exterior decorative cladding from the building's structural wall and thermal insulation via a continuous 30mm to 50mm air cavity. This chimney effect drives natural convective airflow upward, dissipating solar thermal gain during summer and removing interior condensation moisture during winter, cutting HVAC energy loads by up to 25% to 30%.</p>
+        <p>However, securing mega-format panels against severe wind pressures (which can exceed 2.5 to 3.5 kPa on high-rise towers) requires precision structural anchoring. Three primary subframe anchoring systems are engineered for Pixel Ceramic slabs:</p>
+        
+        <h4>A. Concealed Undercut Mechanical Anchors (KEIL System)</h4>
+        <p>The gold standard for luxury commercial towers, the KEIL undercut anchor utilizes computer-guided diamond router bits to drill a blind, conical undercut hole into the rear face of an 8mm or 9mm slab without piercing the front surface. An expanding stainless steel (A4 Grade 316) undercut anchor sleeve is inserted and tightened with calibrated torque. This creates a 100% stress-free, mechanical interlock with horizontal aluminum runner rails. This system supports high shear and pull-out loads (exceeding 1.8 to 2.4 kN per anchor point) while leaving the exterior façade clean, unbroken by visible clips.</p>
 
-            <h3>4. Zero-Stain Kitchen Countertops & Wet Areas</h3>
-            <p>Because sintered stone is non-porous, hot pans, oils, acidic citrus juices, and cleaning chemicals cannot penetrate or etch the surface. Seamless 1200x2400 mm installations eliminate unsanitary grout lines in luxury culinary spaces.</p>
+        <h4>B. Concealed Structural Chemical-Mechanical Bonding</h4>
+        <p>For mid-rise buildings and residential envelopes, high-elasticity structural MS polymer or polyurethane bonding adhesives (such as SikaTack-Panel) are applied along vertical aluminum T-profiles in conjunction with high-tack temporary positioning tape. This system evenly distributes wind suction forces across continuous adhesive ribbons, absorbing structural building movements and building deflection without point stresses.</p>
+
+        <h4>C. Visible Stainless Steel Retaining Clips</h4>
+        <p>For budget-sensitive commercial projects or parking garage wraps, color-matched powder-coated stainless steel clips hook directly onto horizontal kerf channels or panel edges. While visible from close range, they provide cost-effective, rapid installation and individual panel demountability for maintenance.</p>
+
+        <div class="modal-callout-info">
+            <strong>Façade Engineering Note:</strong> When engineering ventilated facades with 1200x2400 mm slabs, always specify a minimum 6mm to 8mm open or baffled joint between adjacent panels. This accommodates building drift, seismic sway, and the slab's low linear thermal expansion (approximately 1.5mm per 2.4m length across a 50°C thermal delta).
+        </div>
+
+        <h3>5. Dead-Load Comparison: Sintered Slabs vs Dimensional Natural Stone</h3>
+        <p>A critical consideration in modern high-rise and retrofit architecture is the structural dead load imposed on the building frame, foundations, and transfer slabs. Traditional 20mm to 30mm granite or marble cladding imposes crushing dead loads that require oversized steel columns and costly deep pile foundations.</p>
+        <ul>
+            <li><strong>Traditional 20mm Granite / Marble:</strong> Imposes a dead load of approximately <strong>55 to 60 kg/m²</strong> (excluding steel bracketry). In earthquake zones, this heavy mass drastically amplifies seismic shear forces.</li>
+            <li><strong>Traditional 30mm Exterior Stone Cladding:</strong> Imposes <strong>82 to 90 kg/m²</strong> of dead load.</li>
+            <li><strong>Pixel Ceramic 6mm Sintered Porcelain Slab:</strong> Weighs only <strong>14.5 kg/m²</strong>—a massive <strong>75% weight reduction</strong> compared to 20mm natural stone.</li>
+            <li><strong>Pixel Ceramic 9mm Sintered Porcelain Slab:</strong> Weighs only <strong>21.5 kg/m²</strong>—a <strong>64% weight reduction</strong> while providing higher impact resistance for ground-level pedestrian splash zones.</li>
+        </ul>
+        <p>In building recladding and façade retrofits, substituting degraded exterior stone with 6mm sintered slabs allows developers to modernize building thermal envelopes without exceeding original structural load permits or requiring foundation reinforcement.</p>
+
+        <h3>6. Zero-Stain Culinary Countertops & Heavy Commercial Wet Environments</h3>
+        <p>In residential kitchens, Michelin-starred culinary workspaces, and luxury hotel bathroom suites, sintered porcelain has replaced engineered quartz and natural marble as the premier countertop surface. Engineered quartz slabs utilize petroleum-derived polyester resin binders (7% to 10% by weight), which yellow under sunlight and scorch permanently when exposed to cookware exceeding 150°C. Natural marble, comprised of calcium carbonate, dissolves instantly upon contact with lemon juice, vinegar, wine, or tomato sauce, leaving cloudy, unremovable etch marks.</p>
+        <p>Because Pixel Ceramic sintered slabs are 100% mineral-based and fired at 1,220°C, they possess complete chemical inertness:</p>
+        <ol>
+            <li><strong>Direct Heat Immunity:</strong> Pots and hot baking trays straight from a 400°C oven can be placed directly on the countertop surface with zero risk of scorching, cracking, or discoloration.</li>
+            <li><strong>Acid and Chemical Resistance (Class UHA):</strong> Hydrochloric acid, bleach, red wine, turmeric paste, and caustic degreasers wipe off effortlessly with warm water without etching or staining.</li>
+            <li><strong>NSF / Food Contact Hygiene:</strong> With zero porosity and zero organic binders, bacteria, mold, and viruses cannot penetrate the surface. Pixel Ceramic sintered surfaces are certified hygienic for direct food preparation.</li>
+            <li><strong>Scratch & Cut Resistance:</strong> Chefs can cut directly on the surface with high-carbon steel knives without gouging the finish (although wooden cutting boards are recommended to avoid dulling knife blades!).</li>
+        </ol>
+
+        <h3>7. On-Site Handling, Cutting & Fabrication Best Practices</h3>
+        <p>Handling and fabricating 1200x2400 mm mega-slabs demands specialized stone fabrication tools and meticulous shop protocols to prevent breakage during transport, cutting, and installation:</p>
+        <ul>
+            <li><strong>Lifting & Transport:</strong> Mega-slabs must always be transported vertically on rubber-padded A-frame stillages. For manual handling, vacuum suction lifting frames equipped with pressure gauges and mechanical stabilizing bars must be utilized by a minimum of two to four certified handlers. Never carry slabs horizontally, as bending vibrations can induce fracture.</li>
+            <li><strong>Diamond Saw Cutting:</strong> When wet-cutting sintered slabs on a bridge saw or 5-axis CNC router, fabricators must use continuous-rim diamond blades specifically engineered for ultra-hard porcelain. The bridge saw should operate at 1,800 to 2,200 RPM with a reduced feed rate of 1.0 to 1.5 meters/minute, accompanied by abundant coolant water flow targeted directly at the cutting point.</li>
+            <li><strong>Stress-Relief Core Drilling for Cutouts:</strong> When creating interior cutouts for cooktops, sinks, or electrical boxes, <em>never</em> cut sharp 90-degree internal corners with a straight saw blade. Fabricators must first drill all inside corners with a diamond hole-saw bit (minimum radius of 6mm to 10mm). A rounded internal radius distributes mechanical tension and prevents stress fractures from propagating through the slab during transport or thermal cycling.</li>
+            <li><strong>Edge Profiling & Mitered Aprons:</strong> For island waterfall edges, 45-degree miter cuts must be performed using dedicated chamfering blades, backed by two-component epoxy or color-matched methacrylate adhesives with fiberglass mesh backing ribbons for seismic reinforcement.</li>
+        </ul>
+
+        <h3>8. Long-Term Maintenance & Architectural Specifier Checklist</h3>
+        <p>Maintaining sintered porcelain slabs in commercial airports, corporate lobbies, and retail malls is remarkably economical due to the surface's non-absorbent, high-density matrix. Routine cleaning requires only pH-neutral commercial detergents and microfiber flat mops. Unlike natural marble or granite, sintered porcelain <strong>never requires topical sealers, waxes, crystallization polishing, or impregnating chemical coatings</strong> over its entire lifecycle, eliminating ongoing facility maintenance costs.</p>
+        <p>When drafting project architectural specifications (MasterFormat Section 09 30 13 - Ceramic Tiling / Section 07 42 13 - Metal and Porcelain Wall Panels), ensure the following criteria are explicitly mandated:</p>
+        <ul>
+            <li><strong>Compliance Standard:</strong> ISO 13006 / EN 14411 Group BIa, fully vitrified porcelain stoneware.</li>
+            <li><strong>Water Absorption:</strong> Verified &le; 0.05% per ISO 10545-3 / ASTM C373.</li>
+            <li><strong>Flexural Modulus:</strong> Minimum 48 N/mm² per ISO 10545-4.</li>
+            <li><strong>Dimensional Rectification:</strong> Length and width tolerance &plusmn; 0.1%, squareness &plusmn; 0.2%, surface flatness (curvature) &plusmn; 0.2% to ensure seamless 1.5mm to 2.0mm grout joints.</li>
+            <li><strong>Scratch Hardness:</strong> Mohs Grade 7 or higher per EN 101.</li>
+            <li><strong>Fire Rating:</strong> Class A1 non-combustible per EN 13501-1 or ASTM E84 Class A.</li>
+        </ul>
         `,
-        ctaTitle: "Specifying Sintered Slabs for Your Project?",
-        ctaDesc: "Request factory-direct samples or CAD installation details for your architectural studio."
+        ctaTitle: "Specifying Sintered Slabs for Your Architectural Project?",
+        ctaDesc: "Request factory-direct samples, BIM/Revit families, and full CAD façade anchor submittal packs."
     },
     "article-2": {
         title: "Vitrified vs. Porcelain Tiles: The Technical Benchmark for Commercial Specifiers",
         category: "Technical & Installation",
         categoryClass: "pill-tech",
         date: "August 28, 2026",
-        readTime: "5 min read",
-        author: "Quality Engineering Bureau",
-        image: "assets/slider/2. Subtle geometric motifs engineered to elevate quiet spaces.jpg",
-        lead: "Understanding the technical distinctions between soluble salt vitrified tiles, glazed vitrified tiles (GVT), and full-body porcelain stoneware is essential for lifetime structural compliance.",
+        readTime: "11 min read",
+        author: "Quality Engineering Bureau (Pixel Ceramic Morbi)",
+        image: "assets/blog/blog-vitrified-porcelain.jpg",
+        lead: "Navigating the subtle metallurgical and structural boundaries between standard ceramic, soluble salt vitrified, glazed vitrified tiles (GVT/PGVT), and technical full-body porcelain stoneware is vital for ensuring lifetime structural compliance across high-load commercial facilities.",
         content: `
-            <h3>1. The Core Differences in Body Composition</h3>
-            <p>While the terms are often used interchangeably in commercial trade, porcelain tiles meet strict international standards defined by <strong>ISO 13006 / EN 14411 Group BIa</strong>, requiring water absorption &le; 0.5% (and &le; 0.05% for premium vitrified lines). Standard ceramic tiles (Group BIIa/BIII) exhibit absorption rates between 3% and 10%.</p>
+<h3>1. Demystifying Ceramic Terminology: Ceramic, Vitrified & Porcelain</h3>
+        <p>In global architectural specification and construction procurement, terminology is frequently conflated. Contractors, distributors, and specifiers often use the terms 'vitrified tile' and 'porcelain tile' interchangeably. However, from a metallurgical, mineralogical, and international standards perspective, precise structural distinctions dictate where each product can be safely installed without risking catastrophic flooring failures, hollow debonding, or premature surface wear.</p>
+        <p>All ceramic tiles originate from clay, silica, and fluxing minerals fired in kilns. However, the exact mineral proportion, compaction pressure, firing temperature, and resulting vitreous (glassy) phase density separate porous ceramic bodies from impermeable technical porcelain stoneware. In standard red or white-body ceramic tiles (frequently used for residential bathroom walls), clay content is high, compaction pressures are relatively low (2,000 to 3,500 N/cm²), and firing occurs between 1,000°C and 1,120°C. This leaves an open microscopic capillary network with water absorption rates ranging from 3.0% to over 10.0%.</p>
+        <p>Conversely, <strong>vitrified tiles and porcelain tiles</strong> are engineered with high percentages of refined feldspar and quartz, compacted at extreme pressures exceeding 4,000 to 6,000 N/cm², and fired between 1,200°C and 1,240°C. At this peak temperature, the feldspar melts into an amorphous glass that floods the pore spaces, transforming the loose mineral mixture into a solid, vitrified mass (from the Latin <em>vitrum</em>, meaning glass).</p>
 
-            <h3>2. Surface Wear and PEI Abrasion Classes</h3>
-            <p>Pixel Ceramic's Glazed Vitrified Tiles (GVT/PGVT) feature multi-layer digital glaze coats tested up to <strong>PEI IV and PEI V</strong>, making them capable of handling millions of foot traffic cycles in airports, corporate headquarters, and retail concourses without surface dulling.</p>
+        <div class="modal-quote-box">
+            "Under international building codes, the definition of true porcelain is strictly quantitative: any tile dry-pressed under high pressure with a verified water absorption of &le; 0.5% (Group BIa) qualifies as porcelain stoneware."
+        </div>
 
-            <div class="modal-quote-box">
-                "Specifying Group BIa fully vitrified porcelain ensures high flexural strength (&gt;35 N/mm&sup2;) and complete immunity to moisture-induced warping."
-            </div>
+        <h3>2. The Regulatory Framework: ISO 13006 & EN 14411 Classifications</h3>
+        <p>The International Organization for Standardization (ISO 13006) and the European Committee for Standardization (EN 14411) classify ceramic tiles using a two-dimensional grid based on <strong>Method of Shaping</strong> (Group A: Extruded, Group B: Dry-Pressed) and <strong>Water Absorption Percentage (Eb)</strong>:</p>
 
-            <h3>3. Technical Selection Checklist for Architects</h3>
-            <p>When selecting surfaces for commercial projects, always verify:</p>
-            <ul>
-                <li><strong>Breaking Strength:</strong> Ensure &ge; 1,500 N for floor loads.</li>
-                <li><strong>Frost Resistance:</strong> Mandatory for outdoor patios in cold climate zones.</li>
-                <li><strong>Chemical Resistance:</strong> Class GA/GLA under ISO 10545-13 for commercial sanitization.</li>
-            </ul>
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>ISO / EN Group</th>
+                        <th>Manufacturing Method</th>
+                        <th>Water Absorption (Eb)</th>
+                        <th>Industry Classification</th>
+                        <th>Typical Application Realm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Group BIa</strong></td>
+                        <td>Dry-Pressed (B)</td>
+                        <td><strong>Eb &le; 0.5%</strong> (Pixel achieves &le; 0.05%)</td>
+                        <td>Fully Vitrified Porcelain Stoneware</td>
+                        <td>High-traffic commercial, exteriors, facades, heavy industrial floors</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Group BIb</strong></td>
+                        <td>Dry-Pressed (B)</td>
+                        <td>0.5% &lt; Eb &le; 3.0%</td>
+                        <td>Vitrified / Semi-Porcelain</td>
+                        <td>Medium commercial interiors, residential floors</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Group BIIa</strong></td>
+                        <td>Dry-Pressed (B)</td>
+                        <td>3.0% &lt; Eb &le; 6.0%</td>
+                        <td>Semi-Vitrified Ceramic</td>
+                        <td>Residential light foot-traffic floors, protected balconies</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Group BIIb</strong></td>
+                        <td>Dry-Pressed (B)</td>
+                        <td>6.0% &lt; Eb &le; 10.0%</td>
+                        <td>Standard Ceramic Floor Tile</td>
+                        <td>Interior domestic bathrooms and bedrooms only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Group BIII</strong></td>
+                        <td>Dry-Pressed (B)</td>
+                        <td>Eb &gt; 10.0%</td>
+                        <td>Porous Ceramic Wall Tile</td>
+                        <td>Interior wall cladding only (never floors or outdoors)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>3. Microstructural Density & Water Absorption (ASTM C373 / ISO 10545-3)</h3>
+        <p>Why is water absorption the single most critical engineering parameter for specifiers? Water absorption is not merely a measure of whether a tile will absorb liquid spilled on top of it; it is a direct proxy for the tile's internal void volume, bulk density, and structural integrity.</p>
+        <p>When tiles are installed in exterior environments (patios, plazas, cladding, swimming pools) in temperate or continental climates, absorbed moisture inside porous tiles (Group BIIa or BIII) undergoes cyclic freezing and thawing. As water transitions to ice at 0°C, its volume expands by approximately 9%. In a porous tile body, this hydraulic freeze-thaw pressure generates micro-cracks that cause spalling, glaze delamination, and structural fracturing. Furthermore, in humid coastal environments, water vapor migration from sub-screeds through porous tiles carries dissolved mineral salts to the surface, causing permanent efflorescence and grout debonding.</p>
+        <p>Pixel Ceramic's Group BIa vitrified porcelain tiles boast a certified water absorption of <strong>&le; 0.05%</strong> (tested under vacuum immersion per <strong>ISO 10545-3</strong> and <strong>ASTM C373</strong>). This total vitrification guarantees 100% frost immunity, zero moisture expansion, and complete prevention of sub-surface staining.</p>
+
+        <h3>4. Surface Wear Resistance: PEI Ratings vs Deep Abrasion Volume Loss</h3>
+        <p>For commercial flooring specifiers, evaluating abrasion resistance determines whether a tile will maintain its visual prestige over a 20-year design life or show unsightly traffic paths within 18 months of opening. Surface wear is evaluated differently depending on whether the tile is glazed or unglazed (full body):</p>
+
+        <h4>A. Glazed Porcelain / Vitrified Tiles (GVT & PGVT) - ISO 10545-7 (PEI Rating)</h4>
+        <p>Glazed Vitrified Tiles receive high-definition digital inkjet glazes protected by high-temperature transparent or matte crystalline protective coats. Abrasion resistance is tested using the PEI (Porcelain Enamel Institute) abrasion machine, which rotates abrasive steel bearings, corundum grit, and distilled water over the glazed surface at calibrated rotational cycles:</p>
+        <ul>
+            <li><strong>PEI Class I (150 revs):</strong> Barefoot residential bathrooms and en-suites.</li>
+            <li><strong>PEI Class II (600 revs):</strong> Light residential bedrooms with soft footwear.</li>
+            <li><strong>PEI Class III (750 & 1,500 revs):</strong> General residential living rooms, residential kitchens, and low-traffic hotel guest rooms.</li>
+            <li><strong>PEI Class IV (2,100, 6,000 & 12,000 revs):</strong> High-traffic commercial interiors—hotel lobbies, corporate corridors, commercial restaurants, retail boutiques, and auto showrooms. Pixel Ceramic's standard commercial GVT lines meet or exceed PEI IV.</li>
+            <li><strong>PEI Class V (&gt; 12,000 revs + stain test):</strong> Maximum severe commercial durability—airport terminals, railway stations, shopping mall public concourses, and supermarket aisles subject to constant abrasive foot traffic and rolling luggage wheels.</li>
+        </ul>
+
+        <h4>B. Unglazed Technical Full-Body Porcelain - ISO 10545-6 (Deep Abrasion)</h4>
+        <p>In full-body technical porcelain, there is no separate surface glaze layer; the color and composition run through the entire cross-section of the tile. Therefore, the PEI test is irrelevant. Instead, tiles are tested under <strong>ISO 10545-6</strong>, where a calibrated steel wheel rotates against the tile face under a constant load with a continuous feed of white fused aluminum oxide abrasive. The volume of material scooped out is measured in cubic millimeters (mm³):</p>
+        <p>While the ISO 13006 standard mandates a maximum allowable volume loss of <strong>175 mm³</strong>, Pixel Ceramic's technical full-body porcelain records an ultra-dense volume loss of only <strong>&le; 110 to 125 mm³</strong>, ensuring that even if decades of heavy foot traffic slowly wear down the microscopic top layer, the underlying exposed body is visually and structurally identical.</p>
+
+        <h3>5. Mechanical Strength Benchmarks: Modulus of Rupture & Breaking Strength</h3>
+        <p>In commercial facilities, floors must withstand heavy point loads, including motorized scissor lifts, heavy pallet jacks, hospital gurneys, and high-heel impact forces. Mechanical strength is quantified via two distinct parameters under <strong>ISO 10545-4</strong>:</p>
+        <ol>
+            <li><strong>Modulus of Rupture (MOR / Flexural Strength):</strong> Expressed in N/mm² (megapascals, MPa), MOR measures the material's intrinsic bending resistance regardless of thickness. While ISO Group BIa requires a minimum MOR of &ge; 35 N/mm², Pixel Ceramic vitrified porcelain achieves <strong>&ge; 45 to 52 N/mm²</strong>.</li>
+            <li><strong>Breaking Strength (S):</strong> Expressed in Newtons (N), breaking strength represents the actual total force required to fracture the tile under a three-point center-load bar test. Breaking strength scales quadratically with tile thickness. Standard 9mm vitrified tiles achieve over <strong>2,200 N</strong> (well above the 1,300 N standard threshold), while our 20mm outdoor pavers achieve over <strong>11,000 N</strong>, enabling them to support vehicular traffic and dry-laid pedestal installations.</li>
+        </ol>
+
+        <div class="modal-callout-info">
+            <strong>Specifier Warning on Point Loads:</strong> Even a tile with an MOR of 50 N/mm² will fracture if installed over hollow adhesive voids. In commercial environments, 100% adhesive mortar coverage (achieved via back-buttering and medium-bed troweling) is mandatory to eliminate subterranean air pockets.
+        </div>
+
+        <h3>6. Chemical, Acid & Alkali Resistance (ISO 10545-13 & 14)</h3>
+        <p>Commercial healthcare facilities, laboratories, industrial food preparation plants, and public restrooms require daily chemical sanitization with aggressive agents, including sodium hypochlorite (bleach), quaternary ammonium compounds, diluted hydrochloric acid, and caustic soda. Tiles specified for these environments must hold high chemical resistance classifications under <strong>ISO 10545-13</strong>:</p>
+        <ul>
+            <li><strong>Class ULA / GLA:</strong> No visual effect when exposed to low-concentration acids and alkalis (hydrochloric acid 3%, citric acid 100g/L, potassium hydroxide 30g/L).</li>
+            <li><strong>Class UHA / GHA:</strong> Completely resistant to high-concentration industrial acids and alkalis (hydrochloric acid 18%, lactic acid 5%, potassium hydroxide 100g/L). Pixel Ceramic unglazed technical porcelain achieves Class UHA certification.</li>
+            <li><strong>Stain Resistance (ISO 10545-14):</strong> Tested with staining agents including methylene blue, green olive oil, and iodine solution. Classified from Class 1 (stain cannot be removed) to Class 5 (stain completely removed with warm running water). Pixel Ceramic polished and matte vitrified surfaces achieve Class 5 stain cleanability.</li>
+        </ul>
+
+        <h3>7. Specifier’s Commercial Decision Matrix</h3>
+        <p>To assist architectural project teams in selecting the optimal tile classification, consult the decision matrix below:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Commercial Environment</th>
+                        <th>Recommended Tile Type</th>
+                        <th>Key Technical Justification</th>
+                        <th>Recommended Minimum Thickness</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Airport / Rail Terminal Concourse</strong></td>
+                        <td>Full-Body Technical Porcelain or Heavy GVT (PEI V)</td>
+                        <td>Extreme abrasive wear, continuous rolling luggage wheels, high impact resistance</td>
+                        <td>10mm &ndash; 12mm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hospital & Healthcare Clinics</strong></td>
+                        <td>Matte Glazed Porcelain (PEI IV / R10)</td>
+                        <td>Class UHA chemical resistance to hospital disinfectants, low glare, slip safety</td>
+                        <td>9mm &ndash; 10mm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Commercial Kitchens & Food Prep</strong></td>
+                        <td>Full-Body Anti-Slip R11 / R12 with V4 Displacement</td>
+                        <td>Immunity to hot vegetable oils, animal fats, steam cleaning, and heavy pot impact</td>
+                        <td>12mm &ndash; 15mm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Corporate Headquarters Lobby</strong></td>
+                        <td>Polished Glazed Vitrified (PGVT) or Sintered Mega-Slab</td>
+                        <td>High-aesthetic marble visual prestige, zero porosity, low maintenance, PEI IV</td>
+                        <td>9mm &ndash; 12mm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Exterior Plaza / Rooftop Terrace</strong></td>
+                        <td>20mm Outdoor Vitrified Porcelain Paver (R11)</td>
+                        <td>100% frost-thaw immune, &gt;10,000 N breaking load on raised pedestals, UV stable</td>
+                        <td>20mm</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>8. Substrate Preparation & Adhesive Mortar Selection</h3>
+        <p>Because Group BIa vitrified porcelain tiles have a water absorption of &le; 0.05%, they cannot form a mechanical bond with traditional sand-cement mortars. Traditional cement pastes rely on the tile absorbing water from the slurry, drawing cement crystals into the tile's pores to form an interlocking grip. Attempting to install vitrified porcelain with traditional sand-cement mortar will result in complete debonding within 12 to 24 months as the tile expands and contracts.</p>
+        <p>Specifiers must strictly mandate <strong>Polymer-Modified Thin-Bed Tile Adhesives</strong> conforming to <strong>EN 12004 / ISO 13007</strong>:</p>
+        <ul>
+            <li><strong>Class C2 (Improved Cementitious):</strong> Formulated with synthetic polymers that generate a powerful chemical bond with the impermeable vitrified porcelain back.</li>
+            <li><strong>Class E (Extended Open Time):</strong> Provides 30+ minutes of open time, essential when setting large-format tiles to prevent skinning over before contact.</li>
+            <li><strong>Class T (Slip Resistant):</strong> Thixotropic formulation preventing vertical slippage on wall installations.</li>
+            <li><strong>Class S1 or S2 (Deformability):</strong> Highly flexible polymer modification. Class S1 (deflection 2.5mm to 5mm) is mandatory for large formats and heated screeds; Class S2 (deflection &gt; 5mm) is required for external facades, suspended wooden decks, and mega-slabs.</li>
+        </ul>
         `,
-        ctaTitle: "Need Full Testing Data Sheets?",
-        ctaDesc: "Download our complete ISO 13006 / ASTM test reports for engineering submissions."
+        ctaTitle: "Need Complete ISO 13006 Laboratory Test Certificates?",
+        ctaDesc: "Download our comprehensive technical submittal package with ASTM, CE, and ISO performance testing reports."
     },
     "article-3": {
         title: "2026 Tile Design Forecast: Tactile Carving Finishes, Fluted Surfaces & Earth Tones",
         category: "Tile Trends & Finishes",
         categoryClass: "pill-trend",
         date: "August 15, 2026",
-        readTime: "4 min read",
-        author: "Pixel Ceramic Design Studio",
-        image: "assets/slider/3. Rich marble textures crafted for bold kitchen walls.jpg",
-        lead: "Modern interior architecture is pivoting towards rich, multi-sensory surfaces where tactile micro-textures and organic earth minerals create serene, grounded atmospheres.",
+        readTime: "10 min read",
+        author: "Pixel Ceramic Design Studio (Cersaie Trend Observatory)",
+        image: "assets/blog/blog-carving-trends.jpg",
+        lead: "Contemporary interior architecture is experiencing a profound sensory renaissance: sterile high-gloss surfaces are surrendering to tactile micro-carved marble veining, fluted architectural reliefs, and restorative earth mineral palettes that re-establish human connection to nature.",
         content: `
-            <h3>1. Synchro-Carving & Digital Vein Inking</h3>
-            <p>The newest breakthrough in ceramic printing is synchronous digital carving. High-precision inkjet glaze nozzles deposit reactive inks along the marble veining patterns before entering the kiln, producing realistic tactile depressions that mirror authentic Italian quarry marble.</p>
+<h3>1. The Multi-Sensory Shift in Architectural Surfaces</h3>
+        <p>For more than fifteen years following the advent of digital inkjet printing in the ceramic tile sector, the industry was locked in a race for visual resolution. Manufacturers competed to print higher DPI photographs of Carrara marble, onyx, and travertine onto flat ceramic bodies, finishing them with mirror-like high-gloss glazes. While visually striking in photography, flat high-gloss surfaces frequently fall short in lived architectural experiences: they reflect harsh glare from artificial lighting, feel cold and clinical to the touch, and reveal every shoe scuff, smudge, and water droplet.</p>
+        <p>As we enter 2026, leading interior designers, hospitality developers, and luxury architects are demanding surfaces that engage the sense of touch. Modern luxury is no longer defined by superficial gloss; it is defined by <em>tactility, organic depth, acoustic softness, and sensory resonance</em>. Sintered porcelain and vitrified surfaces are transitioning from two-dimensional graphic representations of stone to three-dimensional, multi-sensory materials with structural depth, relief, and natural mineral patinas.</p>
 
-            <h3>2. Fluted and 3D Micro-Reliefs</h3>
-            <p>Commercial lobby walls and bathroom vanities are embracing fluted vertical geometries. These 3D surfaces interact dynamically with architectural lighting, casting soft shadows that lend depth and movement to interior spaces.</p>
+        <div class="modal-quote-box">
+            "Design in 2026 is tactile-first. In an increasingly digital world dominated by smooth glass smartphone screens, human beings instinctively crave authentic, organic textures in physical architectural environments."
+        </div>
 
-            <h3>3. The Warm Minimalist Palette</h3>
-            <p>Cool sterile grays are giving way to warm travertine, almond limestone, clay terracotta, and olive sage tones. These warm earthy palettes foster biophilic wellness in wellness spas and luxury residences.</p>
+        <h3>2. Synchro-Carving Technology: Reactive Digital Inks & Vein Deposition</h3>
+        <p>The technical breakthrough driving this sensory revolution is <strong>Synchronous Digital Carving (Synchro-Carving)</strong>. In conventional textured tiles, surface relief was created using mechanical press mold punches. While this produced a textured surface, the texture was static and completely decoupled from the digital graphic printed on top—meaning a vein of marble would appear on the surface while the tactile depression would occur randomly an inch away, creating an unsettling visual discord.</p>
+        <p>Pixel Ceramic's Synchro-Carving line synchronizes high-speed piezo-electric inkjet heads with specialized <strong>reactive sinking inks and ceramic glazes</strong>:</p>
+        <ol>
+            <li><strong>Digital Depth Mapping:</strong> High-resolution optical scans of rare Italian and Greek quarry stones are digitally processed to separate the mineral vein pathways, crystalline fissures, and soft matrix pockets into 3D height maps.</li>
+            <li><strong>Reactive Sinking Glaze Application:</strong> Before the tile enters the kiln, a secondary digital print head deposits micronized droplets of chemical sinking agents specifically along the exact coordinates of the marble veins.</li>
+            <li><strong>Pyrochemical Micro-Etching:</strong> Under 1,220°C kiln heat, these reactive agents depress the glaze along the vein pathways by 0.1mm to 0.4mm, while adjacent crystalline matte glazes raise the stone matrix.</li>
+        </ol>
+        <p>The result is a surface where every visible crack, quartz fissure, and sedimentary layer can be felt precisely with the fingertips, creating a tactile realism indistinguishable from natural hand-carved Roman travertine or honed Tuscan marble.</p>
+
+        <h3>3. Fluted Geometries & 3D Micro-Reliefs: Architectural Acoustics & Grazing Light</h3>
+        <p>Alongside carving finishes, the 2026 architectural landscape has seen an explosion of <strong>3D fluted, reeded, and ribbed porcelain wall surfaces</strong>. Originally popularized in bespoke woodworking and fluted architectural glass, ribbed geometries are now manufactured in vitrified porcelain formats (such as 300x600 mm, 600x1200 mm, and 1200x2400 mm wall slabs).</p>
+        <p>Fluted porcelain wall cladding provides profound functional and aesthetic advantages in luxury hospitality and commercial environments:</p>
+        <ul>
+            <li><strong>Interplay with Architectural Grazing Light:</strong> When illuminated by recessed ceiling grazing LEDs or wall-wash lighting, fluted surfaces produce rhythmic gradients of shadow and highlight that change dynamically throughout the day as the sun traverses the building.</li>
+            <li><strong>Acoustic Diffusion in Hard-Surface Spaces:</strong> Modern luxury interiors often suffer from harsh acoustic reverberation due to expansive glass windows and polished floors. The convex and concave ribs of fluted porcelain disrupt parallel sound reflections, scattering acoustic waves and reducing flutter echo in hotel lobbies and fine dining restaurants.</li>
+            <li><strong>Vertical Monumentality:</strong> The crisp vertical fluting lines draw the human eye upward, visually accentuating ceiling height in spaces with restricted vertical clearance.</li>
+            <li><strong>Imperviousness in Wet Zones:</strong> Unlike fluted timber or MDF wall paneling—which swells and rots in humid environments—fluted porcelain can be wrapped into wet shower enclosures, spa steam rooms, and behind luxury bathroom vanities with zero moisture vulnerability.</li>
+        </ul>
+
+        <h3>4. The 2026 Color Forecast: Earth Minerals, Warm Travertines & Biophilic Wellness</h3>
+        <p>The visual color palette of commercial and residential surfaces is undergoing its most dramatic evolution in two decades. The sterile, cold grey-and-white minimalist palette that dominated corporate architecture from 2010 to 2022 is being replaced by <strong>warm, restorative earth tones grounded in geological authenticity</strong>:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Color Palette Focus</th>
+                        <th>Dominant Hex / Mineral Tones</th>
+                        <th>Psychological & Architectural Mood</th>
+                        <th>Ideal Project Typology</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Warm Roman Travertine</strong></td>
+                        <td>Almond, Honey Cream, Warm Sandstone (#E8D8C8)</td>
+                        <td>Warmth, classical timelessness, tactile comfort, Mediterranean heritage</td>
+                        <td>Luxury hotel atriums, residential living pavilions, retail flagship boutiques</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Biophilic Earth Terracotta</strong></td>
+                        <td>Sienna Clay, Burnt Umber, Rust Mineral (#A0522D)</td>
+                        <td>Grounded stability, artisan warmth, connection to soil and craftsmanship</td>
+                        <td>Artisan cafes, boutique wine cellars, wellness resort villas, spa suites</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mineral Olive Sage</strong></td>
+                        <td>Subdued Olive, Eucalyptus Green, Moss Gray (#6B8E23)</td>
+                        <td>Stress reduction, restorative biophilic healing, organic serenity</td>
+                        <td>Healthcare wellness centers, spa treatment rooms, luxury residential bathrooms</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sedimentary Basalt & Charcoal</strong></td>
+                        <td>Deep Graphite, Smoked Anthracite, Warm Slate (#2F4F4F)</td>
+                        <td>Dramatic focal anchoring, quiet luxury, moody sophistication</td>
+                        <td>Executive corporate boardrooms, cocktail lounges, modern exterior rainscreens</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>5. Material Juxtaposition: Pairing Tactile Porcelain with Contemporary Elements</h3>
+        <p>Architects in 2026 rarely specify porcelain in isolation. The most acclaimed international projects achieve emotional resonance through <strong>material tension and juxtaposition</strong>—pairing the permanence of ceramic stone with complementary architectural elements:</p>
+        <ul>
+            <li><strong>Tactile Porcelain + Brushed Warm Metals:</strong> Pairing soft matte synchronous-carved travertine porcelain with brushed champagne bronze, raw brass, or warm copper trim creates a harmonious interplay of warm geological stone and refined metallurgy.</li>
+            <li><strong>3D Fluted Tiles + Fluted Glass:</strong> Repeating vertical fluted motifs across wet shower porcelain walls and adjacent fluted tempered glass partition screens unifies bathroom suite architecture with clean geometric rhythm.</li>
+            <li><strong>Porcelain Slabs + Biophilic Green Walls:</strong> Framing living preserved moss walls and indoor ficus trees with monumental 1200x2400 mm dark basalt porcelain creates striking contrast between vibrant organic foliage and timeless geological masonry.</li>
+        </ul>
+
+        <h3>6. Commercial Hospitality & Retail Applications</h3>
+        <p>Tactile and micro-carved porcelain finishes are proving particularly successful in high-traffic commercial settings where surface longevity must coexist with bespoke interior styling:</p>
+        <ol>
+            <li><strong>Hotel Reception Desk Wraps:</strong> Sintered slabs with synchronous carving can be mitered seamlessly around curved or angular reception desks, resisting luggage scuffs and cleaning chemicals while providing guests with an immediate tactile impression of bespoke luxury upon check-in.</li>
+            <li><strong>Luxury Retail Dressing Rooms & Cash Wraps:</strong> Luxury fashion flagships utilize warm travertine porcelain to create warm, flattering ambient lighting conditions that enhance customer comfort and dwell time.</li>
+            <li><strong>Restaurant Bar Fronts & Back-Bar Niches:</strong> Fluted porcelain withstands the continuous impact of bar stools and spilled acidic cocktails, wiping clean with a damp microfiber cloth while adding dramatic three-dimensional shadow lines under integrated toe-kick LED lighting.</li>
+        </ol>
+
+        <h3>7. Maintenance Protocols for Textured & Carved Surfaces</h3>
+        <p>A common apprehension among commercial facility managers when considering textured or carved surfaces is maintenance: will dust, shoe grime, or hard-water scale become trapped within the 3D relief? With Pixel Ceramic's micro-carved and fluted surfaces, cleanability is engineered into the glaze chemistry:</p>
+        <div class="modal-callout-info">
+            <strong>Maintenance Guideline:</strong> Pixel Ceramic utilizes non-porous crystalline surface seal glazes fired at 1,220°C. While the surface features 3D depth, the microscopic pore diameter remains closed (&le; 0.05% absorption). Grime cannot adhere chemically to the glass matrix.
+        </div>
+        <ul>
+            <li><strong>Routine Maintenance:</strong> Daily flat microfiber mopping with pH-neutral multi-surface detergents (such as Fila Cleaner Pro or equivalent) is sufficient to remove surface dust and pedestrian soil.</li>
+            <li><strong>Heavy Commercial Soil Removal:</strong> In commercial food zones, periodic cleaning with a low-pressure rotating cylindrical brush scrubber (using alkaline degreasers) effortlessly sweeps soil out of low-relief carving valleys without dulling the matte finish.</li>
+            <li><strong>What to Avoid:</strong> Never apply topical acrylic waxes, solvent-based sealers, or crystallization polishes. These products create sticky surface residues that trap dirt inside the carved valleys and permanently ruin the sophisticated matte patina.</li>
+        </ul>
         `,
-        ctaTitle: "Explore the 2026 Design Collection",
-        ctaDesc: "Browse our latest high-definition carving and fluted porcelain series."
+        ctaTitle: "Request the 2026 Surface Design Lookbook",
+        ctaDesc: "Explore our curated palette of synchronous carving finishes, fluted 3D wall panels, and warm earthy stone collections."
     },
     "article-4": {
         title: "Optimizing Container Freight & Breakage Prevention for Oceanic Tile Exports",
         category: "Export & Logistics",
         categoryClass: "pill-export",
         date: "August 02, 2026",
-        readTime: "7 min read",
-        author: "Global Maritime Logistics Team",
-        image: "assets/calculator-header-bg.jpg",
-        lead: "Maritime shipping of ceramic tiles requires meticulous weight optimization, heavy-duty packing engineering, and strategic port proximity to guarantee zero-breakage container delivery.",
+        readTime: "12 min read",
+        author: "Global Maritime Logistics Team (Pixel Ceramic Export Desk)",
+        image: "assets/blog/blog-ocean-logistics.jpg",
+        lead: "Transporting thousands of metric tonnes of dense, brittle vitrified porcelain across global ocean lanes requires precision weight calculation, advanced packaging engineering, and rigorous dunnage stabilization to guarantee zero-breakage delivery at destination ports.",
         content: `
-            <h3>1. Pixel Ceramic's 4-Tier Export Packing Architecture</h3>
-            <p>To withstand intense ocean transit harmonics and multi-modal handling, every consignment follows a strict 4-tier packaging protocol:</p>
-            <ol>
-                <li><strong>Foam Corner Edge Protectors:</strong> High-density EVA cushioning on all tile corners.</li>
-                <li><strong>Heavy-Duty 3-Ply Corrugated Cartons:</strong> Moisture-resistant outer boxes with automated barcode labeling.</li>
-                <li><strong>ISPM-15 Heat-Treated & Fumigated Pallets:</strong> Certified solid hardwood skids built to European and American logistics dimensions.</li>
-                <li><strong>Thermal Shrink-Wrap & High-Tensile PET Strapping:</strong> Multi-layer waterproof wrapping with airtight strapping anchors.</li>
-            </ol>
+<h3>1. The Physics of Oceanic Tile Transport: Static Mass vs Dynamic G-Forces</h3>
+        <p>Ceramic tiles and porcelain slabs represent one of the heaviest, densest, and most structurally demanding cargoes in global intermodal maritime commerce. A single 20-foot Full Container Load (FCL) packed with porcelain tiles carries between <strong>26,000 to 28,000 kilograms (26 to 28 metric tonnes)</strong> of dense, rigid mineral mass concentrated within an internal floor space measuring just 5.9 meters long by 2.35 meters wide.</p>
+        <p>During oceanic voyages spanning 15 to 45 days across the Arabian Sea, the Atlantic, or the Pacific Ocean, container vessels encounter severe multi-axis dynamic forces. A cargo container at sea is continuously subjected to six degrees of freedom simultaneously: <strong>rolling, pitching, yawing, surging, swaying, and heaving</strong>. When a container ship rolls 20 degrees in rough seas, transverse acceleration forces exceeding 1.2G to 1.8G are exerted on the stacked pallets. Without sophisticated packaging architecture and container stowing engineering, these harmonic shockwaves can cause pallet deformation, carton crushing, tile-on-tile friction fractures, and catastrophic container floor rupture.</p>
 
-            <h3>2. Port Proximity Advantage: Mundra Port (180 km)</h3>
-            <p>Located just 180 km from Mundra Port—India's largest deep-water commercial container port—our factory achieves same-day gate-in, minimizing inland haulage costs and road vibration risk.</p>
+        <div class="modal-quote-box">
+            "In maritime tile logistics, zero breakage is achieved through structural physics: every millimeter of internal container void must be engineered out, transforming individual loose pallets into an immovable, shock-absorbing monolithic block."
+        </div>
+
+        <h3>2. Container Dynamics: Why Ceramic Tiles Are Strictly 20ft FCL Cargo</h3>
+        <p>A frequent inquiry from international procurement officers and first-time importers is: <em>"Can we pack tiles into 40-foot or 40-foot High Cube (HC) containers to reduce ocean freight rates per square meter?"</em></p>
+        <p>From an engineering and regulatory perspective, shipping heavy tiles in 40ft containers is virtually impossible due to international highway weight regulations and container structural payload caps:</p>
+        <ul>
+            <li><strong>Weight vs. Volume Density:</strong> Standard general cargo (such as electronics, furniture, or apparel) is volume-constrained ('cubes out' before it 'weighs out'). Conversely, ceramic tiles are extremely dense (specific gravity ~2.4 g/cm³), meaning they 'weigh out' long before filling the volumetric capacity of a container.</li>
+            <li><strong>Payload Limits:</strong> A standard 20ft dry container has a maximum gross weight rating of 30,480 kg and a tare weight of ~2,200 kg, leaving a maximum net payload of approximately <strong>28,280 kg</strong>. A 40ft dry container has a maximum gross rating of 32,500 kg with a tare weight of ~3,800 kg, leaving a net payload of ~28,700 kg.</li>
+            <li><strong>Economic Reality:</strong> Packing tiles into a 40ft container costs almost twice as much in ocean freight while providing less than 2% additional payload capacity! Furthermore, in destinations such as the United States, Europe, and the Middle East, federal road weight limits strictly cap container axle loads (typically 40,000 to 44,000 lbs in the USA), making overweight 40ft containers illegal to transport over road networks without costly specialized heavy-haul permits.</li>
+        </ul>
+
+        <h3>3. Pixel Ceramic's 4-Tier Export Packaging Architecture</h3>
+        <p>To ensure that every tile carton arrives in pristine, factory-fresh condition regardless of destination port handling conditions, Pixel Ceramic has developed an industry-benchmarked 4-tier packaging protocol:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Packaging Tier</th>
+                        <th>Material Specification</th>
+                        <th>Engineering Protective Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Tier 1: Tile Edge Cushioning</strong></td>
+                        <td>High-density EVA foam corner protectors & plastic edge caps</td>
+                        <td>Absorbs direct point impacts on tile corners (the most vulnerable fracture point during handling)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tier 2: Primary Outer Carton</strong></td>
+                        <td>5-Ply heavy-duty corrugated cardboard (GSM &gt; 180g) with water-repellent coating</td>
+                        <td>Prevents moisture penetration, provides stacking crush resistance (&gt; 450 kg compression strength)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tier 3: Solid Wood Palletization</strong></td>
+                        <td>ISPM-15 heat-treated solid hardwood skids with bottom deck runner boards</td>
+                        <td>Distributes 1,000+ kg pallet weight evenly, facilitates 4-way forklift and pallet jack entry</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tier 4: Unitized Load Securing</strong></td>
+                        <td>High-tensile PET strapping (16mm &times; 0.8mm) + 50-micron LLDPE thermal stretch wrap</td>
+                        <td>Binds the palletized stack into a single rigid unit, protects against maritime salt-air humidity</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>4. ISPM-15 Heat Treatment & Fumigation for Wooden Pallets</h3>
+        <p>International Standards for Phytosanitary Measures No. 15 (<strong>ISPM-15</strong>), established by the International Plant Protection Convention (IPPC), mandates that all raw solid wood packaging material used in international export must undergo certified debarking and thermal treatment to prevent the international introduction and spread of plant pests and wood-boring insects.</p>
+        <p>Pixel Ceramic operates dedicated on-site heat treatment chambers certified by India's Directorate of Plant Protection, Quarantine & Storage. All export pallets undergo:</p>
+        <ol>
+            <li><strong>Thermal Kiln Treatment:</strong> The pallet wood core temperature is raised to a minimum of <strong>56°C for at least 30 continuous minutes</strong> throughout the entire thickness of the timber, completely eradicating insects, larvae, nematodes, and fungal spores.</li>
+            <li><strong>IPPC Wheat-Mark Stamping:</strong> Every individual pallet is indelibly branded on two opposite sides with the official IPPC registration mark, displaying the country code (IN), regional agency code, and the treatment identifier (HT - Heat Treated).</li>
+            <li><strong>Anti-Mold Treatment:</strong> To prevent surface mildew during prolonged tropical ocean crossings, timber moisture content is monitored with electronic resistance meters to guarantee &le; 18% moisture prior to assembly.</li>
+        </ol>
+
+        <h3>5. Container Stuffing, Weight Distribution & Dunnage Air Bags</h3>
+        <p>Even perfectly wrapped pallets will suffer damage if allowed to shift inside the container. When a container vessel navigates ocean swell, an open space of just 50mm (2 inches) between pallets provides enough running room for thousands of kilograms of tiles to slide, slam into adjacent pallets, and shatter their edges.</p>
+        <p>Pixel Ceramic's container loading engineering incorporates state-of-the-art dunnage and stowage practices:</p>
+        <ul>
+            <li><strong>Precision Weight Distribution:</strong> Pallets are stowed in interlocking patterns across the container floor to ensure that the container's center of gravity remains low and centered within 2% of the longitudinal and lateral centerline, preventing trailer rollover risks during highway haulage.</li>
+            <li><strong>Inflatable Dunnage Air Bags:</strong> Heavy-duty, multi-ply kraft paper air bags with polyethylene inner bladders are inserted into all vertical voids between pallet rows. Inflated to 0.2 to 0.3 bar of compressed air, these air cushions exert continuous outward pressure, locking the cargo solidly against the container sidewalls and absorbing dynamic voyage vibrations.</li>
+            <li><strong>Heavy-Duty Timber Chocking & Lashing:</strong> The rear container door pallets are braced with heavy 4x4-inch timber balks nailed into the container floor, complemented by cross-lashed polyester composite strapping rated for 3,000 kg breaking tenacity anchored to internal container eyelets.</li>
+        </ul>
+
+        <div class="modal-callout-info">
+            <strong>Customs Inspection Protection:</strong> Rear door timber chocking prevents pallets from shifting and falling outward when container doors are opened by customs inspectors at destination ports, ensuring dockworker safety and passing strict port safety audits.
+        </div>
+
+        <h3>6. The Mundra Port Advantage: 180 km Gateway to Global Trade</h3>
+        <p>A critical competitive advantage for Pixel Ceramic is our strategic proximity to <strong>Mundra Port (Gujarat, India)</strong>, India's largest, most modern deep-water commercial seaport operated by Adani Ports and Special Economic Zone (APSEZ):</p>
+        <ul>
+            <li><strong>Short Inland Transit (180 km / 4 hours):</strong> While ceramic factories in central or northern India must haul containers over 800 to 1,400 km of congested roads—subjecting tiles to severe highway shock and delay—Pixel Ceramic's Morbi facility connects to Mundra Port via dedicated multi-lane national highways in under 4 hours.</li>
+            <li><strong>Direct Deep-Water Berths:</strong> Mundra Port features a natural draft of 17.5 meters, enabling it to berth the world's largest ultra-large container vessels (ULCVs, up to 24,000 TEU capacity) without tidal delays.</li>
+            <li><strong>Direct Global Shipping Loops:</strong> Major global shipping lines—including MSC, Maersk, CMA CGM, Hapag-Lloyd, and COSCO—operate direct weekly express loops from Mundra to Jebel Ali (3 days), Rotterdam (18 days), Hamburg (20 days), Felixstowe (21 days), New York / Newark (24 days), Long Beach (28 days), and Melbourne (22 days).</li>
+            <li><strong>Automated Terminal Operations:</strong> Automated container tracking, radio-frequency terminal gates, and dedicated on-dock rail sidings ensure smooth customs seal processing and zero missed vessel cut-offs.</li>
+        </ul>
+
+        <h3>7. International Trade Documentation & Customs Compliance Checklist</h3>
+        <p>Flawless maritime logistics requires more than physical cargo care; it demands immaculate trade documentation to ensure seamless clearance at destination customs borders without incurring costly demurrage or storage charges. Pixel Ceramic's dedicated export documentation team provides a complete documentation suite customized to destination country regulations:</p>
+        <ol>
+            <li><strong>Clean On Board Ocean Bill of Lading (B/L):</strong> Issued directly by the shipping line, with precise pallet, weight, and description declarations matching commercial invoices.</li>
+            <li><strong>Certified Commercial Invoice & Detailed Packing List:</strong> Itemizing box counts, square meters, net weight, gross weight, and pallet numbers for every batch.</li>
+            <li><strong>Certificate of Origin (Preferential / Non-Preferential):</strong> Legalized by the Chamber of Commerce, enabling importers to claim duty concessions under bilateral free trade agreements.</li>
+            <li><strong>Phytosanitary & Fumigation Certificate:</strong> Issued by authorized government agricultural inspectors verifying ISPM-15 compliance.</li>
+            <li><strong>Pre-Shipment Quality Inspection Certificate:</strong> Pixel Ceramic coordinates with international third-party inspection agencies (including SGS, Bureau Veritas, Intertek, or Cotecna) for container loading supervision and sealing when mandated by destination banks or buyers.</li>
+            <li><strong>Country-Specific Mandates:</strong> Fully registered with SASO SABER (Saudi Arabia), CE Marking Declarations of Performance (DoP for European Union), SONCAP (Nigeria), and PVOC (East Africa).</li>
+        </ol>
+
+        <h3>8. Standard Container Loading Schedules for Common Formats</h3>
+        <p>To assist procurement managers in optimizing container order quantities, the table below details standard 20ft FCL palletization metrics based on a standard 27,500 kg net cargo weight allowance:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Tile Size (cm)</th>
+                        <th>Thickness (mm)</th>
+                        <th>Boxes / Pallet</th>
+                        <th>Pallets / 20ft FCL</th>
+                        <th>Total Boxes / FCL</th>
+                        <th>Total Area (m&sup2;)</th>
+                        <th>Approx. Gross Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>60 &times; 60 cm</strong></td>
+                        <td>9.0 mm</td>
+                        <td>40 boxes (4 pcs/box)</td>
+                        <td>24 pallets</td>
+                        <td>960 boxes</td>
+                        <td>1,382.40 m&sup2;</td>
+                        <td>27,200 kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>60 &times; 120 cm</strong></td>
+                        <td>9.0 mm</td>
+                        <td>30 boxes (2 pcs/box)</td>
+                        <td>24 pallets</td>
+                        <td>720 boxes</td>
+                        <td>1,036.80 m&sup2;</td>
+                        <td>27,000 kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>80 &times; 160 cm</strong></td>
+                        <td>9.0 mm</td>
+                        <td>24 boxes (2 pcs/box)</td>
+                        <td>20 pallets</td>
+                        <td>480 boxes</td>
+                        <td>1,228.80 m&sup2;</td>
+                        <td>27,400 kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>120 &times; 240 cm</strong></td>
+                        <td>9.0 mm</td>
+                        <td>Special A-Frame / Crate</td>
+                        <td>10 steel/wood crates</td>
+                        <td>200 slabs</td>
+                        <td>576.00 m&sup2;</td>
+                        <td>26,800 kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>20 &times; 120 cm (Wood)</strong></td>
+                        <td>9.0 mm</td>
+                        <td>48 boxes (4 pcs/box)</td>
+                        <td>24 pallets</td>
+                        <td>1,152 boxes</td>
+                        <td>1,105.92 m&sup2;</td>
+                        <td>27,100 kg</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         `,
-        ctaTitle: "Calculate Container Pallet Capacities",
-        ctaDesc: "Use our interactive export calculator to determine optimal 20ft FCL container loads."
+        ctaTitle: "Calculate Your Container Payload Capacity",
+        ctaDesc: "Use our export calculator or contact our logistics desk for FOB Mundra and CIF shipping schedules."
     },
     "article-5": {
         title: "Biophilic Architecture: Integrating Natural Wood-Look Porcelain Planks in Modern Facades",
         category: "Architecture & Design",
         categoryClass: "pill-arch",
         date: "July 21, 2026",
-        readTime: "5 min read",
-        author: "Sustainable Architecture Advisory",
-        image: "assets/slider/5. Artisan tile textures crafted for fresh interior accents.jpg",
-        lead: "Wooden plank porcelain combines the restorative emotional warmth of authentic Scandinavian oak with the zero-maintenance, fire-rated resilience of vitrified stoneware.",
+        readTime: "11 min read",
+        author: "Sustainable Architecture Advisory (Pixel Ceramic Design Studio)",
+        image: "assets/blog/blog-biophilic-wood.jpg",
+        lead: "Wood-look vitrified porcelain planks reconcile the restorative emotional warmth of authentic old-growth timber with the fireproof, rot-proof, and maintenance-free permanence required for modern commercial facades, ventilated rainscreens, and high-traffic public promenades.",
         content: `
-            <h3>1. Natural Aesthetics Without Ecological Depletion</h3>
-            <p>Harvesting old-growth hardwood forests for commercial siding poses severe environmental and fire risks. Pixel Ceramic's 20x120 cm and 20x100 cm wood-look porcelain planks replicate genuine grain patterns, knots, and saw-mark textures using eco-friendly digital scanning.</p>
+<h3>1. Biophilia in Contemporary Architecture: The Psychological Need for Timber</h3>
+        <p>In modern urban metropolises characterized by steel skyscrapers, reflective curtain wall glazing, and exposed concrete infrastructure, human occupants experience acute visual fatigue and emotional detachment. The scientific framework of <strong>Biophilic Design</strong>—pioneered by social biologist Edward O. Wilson—posits that human beings possess an innate, genetically rooted evolutionary affinity for natural elements, organic materials, and living biological systems.</p>
+        <p>Extensive peer-reviewed architectural research demonstrates that incorporating natural timber visual motifs, warm wood grain textures, and organic earth tones into corporate workplaces, healthcare recovery pavilions, and residential developments lowers resting cortisol levels by up to 15%, reduces systolic blood pressure, improves mental focus, and accelerates patient healing times. However, while architects passionately champion the aesthetic and physiological benefits of wood, structural engineers, fire safety officers, and building maintenance teams have historically faced severe dilemmas when utilizing genuine natural timber on commercial exterior envelopes and high-traffic wet floors.</p>
 
-            <h3>2. Class A1 Fire Performance & Zero Moisture Decay</h3>
-            <p>Unlike real wood which rots, swells in humid zones, and requires annual toxic chemical sealing, vitrified wood planks are 100% fireproof (Class A1), termite-proof, and impervious to rain or pool splashes.</p>
+        <div class="modal-quote-box">
+            "Biophilic architecture should not come at the cost of global forest degradation or severe structural flammability. Engineered wood-look porcelain provides the authentic biological warmth of timber with the geological permanence of vitrified stone."
+        </div>
+
+        <h3>2. The Structural & Environmental Pitfalls of Natural Timber Cladding</h3>
+        <p>Specifying genuine natural hardwood (such as Burmese Teak, Ipe, Cumaru, or Western Red Cedar) on exterior building facades, open balconies, and public boardwalks introduces significant long-term structural liabilities:</p>
+        <ul>
+            <li><strong>Severe Ecological Depletion & Deforestation:</strong> Tropical hardwood harvesting contributes to ancient rainforest destruction, habitat fragmentation, and high embodied carbon transport emissions from remote jungle basins to metropolitan build sites.</li>
+            <li><strong>Combustibility & Life-Safety Hazards:</strong> Following catastrophic international façade fires (such as the Grenfell Tower tragedy in London), international building codes (IBC Chapter 14, Eurocodes, and NFPA 285) have severely restricted or outright banned combustible materials on exterior assemblies of multi-story buildings. Untreated natural timber is classified as Class D or E under European fire standards (EN 13501-1), presenting severe fire propagation risks.</li>
+            <li><strong>Hygroscopic Swelling, Warping & Splintering:</strong> Real timber is hygroscopic, continually absorbing and desorbing atmospheric moisture. In humid climates or rainy seasons, wood swells, cups, and buckles; during dry seasons, it shrinks, develops deep longitudinal checking fissures, and releases dangerous splinters under bare feet.</li>
+            <li><strong>Biological Decay & Pest Infestation:</strong> Without constant chemical biocides, timber succumbs to wood-rotting fungi (white rot and brown rot), subterranean termites, carpenter ants, and marine borers.</li>
+            <li><strong>Exorbitant Lifecycle Maintenance Costs:</strong> Natural exterior timber requires sanding, power washing, and toxic chemical oil staining every 12 to 18 months. Over a 30-year building lifecycle, maintenance costs frequently exceed the initial installation cost by 300% to 500%.</li>
+        </ul>
+
+        <h3>3. High-Definition Digital Wood Replication & Micro-Relief Press Molds</h3>
+        <p>Pixel Ceramic's wood-look porcelain planks (spanning classic 20x120 cm and 20x100 cm architectural dimensions) replicate authentic old-growth timber through advanced digital surface engineering:</p>
+        <ol>
+            <li><strong>Ultra-High-Resolution Optical Photogrammetry:</strong> Reclaimed heritage oak beams, hand-planed walnut slabs, and weathered Scandinavian larch planks are digitized using multi-spectral 3D laser scanners at over 400 DPI optical resolution. Every microscopic saw mark, natural growth ring, open wood vessel, and rustic knot is captured down to 20-micron tolerances.</li>
+            <li><strong>Structured 3D Roller Punch Molds:</strong> The vitrified porcelain green body is pressed using dedicated structured rubber-steel punches that impart subtle wood grain relief into the surface, ensuring the tactile texture perfectly matches the visible grain beneath.</li>
+            <li><strong>32+ Unique Graphic Tile Faces:</strong> To eliminate the repetitive 'stamp effect' that plagued early ceramic wood tiles, Pixel Ceramic's continuous digital inkjet lines utilize up to 32 completely unique, non-repeating timber graphics per collection. When installed across a 100 m² terrace or continuous facade, no two adjacent planks share identical knot or grain configurations.</li>
+            <li><strong>Satin-Matte Natural Luster Glazes:</strong> Formulated with micronized mineral silicates, our top glazes achieve an authentic 3° to 5° satin sheen that mimics natural oil-rubbed timber rather than artificial glossy plastic laminate.</li>
+        </ol>
+
+        <h3>4. Fire Safety Engineering: Class A1 Non-Combustibility (EN 13501-1)</h3>
+        <p>For architectural specifiers working on high-rise residential towers, educational institutions, hospitals, and transit hubs, fire performance is non-negotiable. Sintered and vitrified porcelain wood planks are composed exclusively of inorganic natural minerals (clays, feldspar, quartz) fired at 1,220°C. They contain zero polymers, zero organic resins, and zero chemical adhesives.</p>
+        <p>Consequently, Pixel Ceramic wood-look porcelain planks achieve the highest possible international fire classification:</p>
+        <ul>
+            <li><strong>EN 13501-1 Reaction to Fire:</strong> Certified <strong>Class A1 / A1fl</strong> (Non-combustible, zero contribution to fire growth).</li>
+            <li><strong>Smoke Development:</strong> Rating <strong>s1</strong> (Zero smoke emission, preventing asphyxiation hazards).</li>
+            <li><strong>Flaming Droplets:</strong> Rating <strong>d0</strong> (Zero flaming droplets or particles released under direct flame impingement).</li>
+            <li><strong>ASTM E84 (USA):</strong> Flame Spread Index = 0, Smoke Developed Index = 0 (Class A interior finish and exterior cladding compliant).</li>
+        </ul>
+        <p>Architects can clad multi-story residential exterior walls, cantilevered soffits, and emergency egress corridors with the warm aesthetic of natural wood while fully complying with the world's strictest municipal fire codes.</p>
+
+        <h3>5. Performance Matrix: Natural Timber vs WPC Composite vs Porcelain Wood Planks</h3>
+        <p>To quantify the engineering advantages for building owners and developers, review the comparative technical matrix below:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Technical Parameter</th>
+                        <th>Pixel Porcelain Wood Plank</th>
+                        <th>Natural Hardwood (Ipe / Teak)</th>
+                        <th>Wood-Plastic Composite (WPC)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Fire Safety Rating</strong></td>
+                        <td><strong>Class A1 (Non-combustible)</strong></td>
+                        <td>Class D / E (Highly combustible)</td>
+                        <td>Class B / C (Melts & emits toxic smoke)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Water Absorption</strong></td>
+                        <td><strong>&le; 0.05% (Impervious)</strong></td>
+                        <td>15% &ndash; 30% (High swelling)</td>
+                        <td>1.0% &ndash; 3.0% (Capillary moisture)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>UV / Color Fastness</strong></td>
+                        <td><strong>100% Stable (DIN 51094)</strong></td>
+                        <td>Greys & silvers within 6 months</td>
+                        <td>Fades & chalks under direct sunlight</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Termite & Rot Resistance</strong></td>
+                        <td><strong>100% Immune</strong></td>
+                        <td>Vulnerable without chemical poisons</td>
+                        <td>Vulnerable to mold growth in shade</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scratch & Furniture Resistance</strong></td>
+                        <td><strong>Mohs 7 (Scratch-proof)</strong></td>
+                        <td>Dents easily under heels/furniture</td>
+                        <td>Scratches easily; cannot be sanded</td>
+                    </tr>
+                    <tr>
+                        <td><strong>30-Year Maintenance Cost</strong></td>
+                        <td><strong>Zero (Routine washing only)</strong></td>
+                        <td>Very High (Annual oiling & sanding)</td>
+                        <td>Moderate (Power washing, replacement)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>6. Raised Exterior Pedestal Flooring & Rooftop Terrace Systems</h3>
+        <p>A premier application for 20mm thick wood-look porcelain planks is in exterior raised-floor terrace systems (pedestal flooring). Traditional exterior tiled terraces rely on thick mortar screeds and bonded waterproofing membranes, which frequently crack and leak over time due to substrate movement and trapped freeze-thaw moisture.</p>
+        <p>In modern pedestal terrace construction, 20mm wood-look porcelain planks are dry-laid directly onto height-adjustable polypropylene pedestals with acoustic rubber spacer heads:</p>
+        <ul>
+            <li><strong>Open Free-Draining Joints:</strong> The 2mm to 4mm open joints between planks allow rainwater to drain instantly beneath the walking surface, eliminating slippery puddles and standing water.</li>
+            <li><strong>Sub-Surface Utility Routing:</strong> The open void beneath the floor conceals electrical conduit, landscape irrigation pipes, and rainwater drainage channels, all while remaining 100% accessible simply by lifting an individual plank with a suction cup.</li>
+            <li><strong>Thermal Insulation Protection:</strong> The elevated porcelain deck shades the underlying roof waterproofing membrane from direct UV radiation and extreme thermal cycling, extending roof membrane lifespan from 10 to over 35 years.</li>
+        </ul>
+
+        <h3>7. Installation Best Practices: Offset Rules & Lippage Prevention</h3>
+        <p>Because long-format porcelain planks (20x120 cm) undergo microscopic dilatometric contraction during cooling in the kiln, all ceramic planks exhibit a slight natural center camber (curvature). To guarantee a perfectly flat, lippage-free floor, tile setters must strictly adhere to professional setting protocols:</p>
+        <ol>
+            <li><strong>Maximum 1/3 (33%) Staggered Offset:</strong> <em>Never</em> lay long wood-look planks in a traditional 50% center-stagger (brick-bond) pattern. In a 50% pattern, the highest point of one tile (its center) aligns directly with the lowest point of the adjacent tile (its corner), maximizing visible lippage. By specifying a <strong>1/3 or 1/4 random running stagger</strong>, edge lippage is eliminated.</li>
+            <li><strong>Mandatory Leveling Spacers:</strong> Always specify reusable mechanical tile leveling clips (wedge-and-clip systems). These mechanical clamps pull adjacent plank edges into perfect planar alignment while the polymer-modified adhesive mortar cures.</li>
+            <li><strong>Back-Buttering Technique:</strong> Trowel adhesive onto the substrate with a 10mm or 12mm notched trowel, and always apply a thin 1mm to 2mm flat contact layer (back-buttering) to the rear of every plank to guarantee 100% solid mortar coverage without hollow pockets.</li>
+        </ol>
         `,
-        ctaTitle: "Request Wood Plank Swatches",
-        ctaDesc: "Get a sample presentation box of our Teakwood, Pine, and Walnut series."
+        ctaTitle: "Request Wood-Look Architectural Swatches",
+        ctaDesc: "Order a curated presentation kit of our Nordic Oak, Smoked Walnut, and Siberian Larch plank collections in 20x120 cm formats."
     },
     "article-6": {
         title: "Slip Resistance & Pendulum Test (PTV) Ratings for Commercial Hospitality",
         category: "Technical & Installation",
         categoryClass: "pill-tech",
         date: "July 10, 2026",
-        readTime: "6 min read",
-        author: "Engineering Compliance Division",
-        image: "assets/slider/6. Layered earthy surfaces designed for balanced living spaces.jpg",
-        lead: "A technical guide to specifying DIN 51130 R-ratings and wet pendulum test values (PTV &ge; 36) for hotel entrances, public concourses, and wet amenity decks.",
+        readTime: "11 min read",
+        author: "Engineering Compliance Division (Pixel Ceramic Testing Lab)",
+        image: "assets/blog/blog-slip-resistance.jpg",
+        lead: "Slip-and-fall accidents represent the single largest public liability risk in commercial hospitality and retail architecture. Specifying verified DIN 51130 R-ratings, barefoot DIN 51097 standards, and wet Pendulum Test Values (PTV &ge; 36) is mandatory for occupant safety and building code compliance.",
         content: `
-            <h3>1. Understanding DIN 51130 R-Values and Pendulum BS 7976-2</h3>
-            <p>Commercial specifiers must ensure public safety compliance across high-risk slip zones:</p>
-            <ul>
-                <li><strong>R9 / PTV 24-35:</strong> Suitable for dry internal areas such as hotel lobbies, corporate suites, and bedrooms.</li>
-                <li><strong>R10 / PTV 36+:</strong> Recommended for restaurant dining areas, shopping malls, and public restrooms.</li>
-                <li><strong>R11 / PTV 45+:</strong> Essential for exterior ramps, wet pool copings, commercial kitchens, and showers.</li>
-            </ul>
+<h3>1. The Biomechanics of Slip Accidents: Hydrodynamic Squeeze & Liability</h3>
+        <p>According to international occupational health and building safety statistics, slips, trips, and falls account for over <strong>40% of all reported public liability claims</strong> in commercial facilities, retail shopping concourses, luxury hotels, and transport terminals. When a pedestrian walks across a dry floor, the friction between footwear soling material and the tile surface is governed by microscopic adhesion and mechanical interlocking. However, the moment a contaminant—such as rainwater tracked through an entrance, spilled cooking oil in a restaurant, or swimming pool water on a patio—is introduced, the physics changes catastrophically.</p>
+        <p>As the pedestrian's heel strikes the wet surface at an angle (typically between 5 and 7 degrees during standard gait), the liquid contaminant forms a lubricating film. If the tile surface lacks sufficient microscopic roughness, the liquid cannot be displaced in time, causing <strong>hydrodynamic squeeze-film lubrication</strong> (the exact same phenomenon as automotive hydroplaning). The heel slips forward uncontrollably, resulting in severe physical injuries and multi-million-dollar liability litigation for facility owners and architectural design firms.</p>
 
-            <h3>2. Micro-Grip Glaze Formulation</h3>
-            <p>Pixel Ceramic utilizes specialized corundum and crystalline mineral topcoats that generate high wet friction without creating rough, hard-to-clean microscopic valleys.</p>
+        <div class="modal-quote-box">
+            "A tile that appears safe when dry can become as slippery as ice with a mere 20-micron film of water. Specifying verified wet friction performance is an ethical and legal obligation for every commercial architect."
+        </div>
+
+        <h3>2. International Slip Testing Standards Demystified</h3>
+        <p>Architectural specifications frequently contain vague or contradictory slip resistance requirements because different global jurisdictions rely on different test methodologies. Understanding the three primary international testing systems is essential for accurate project submittals:</p>
+
+        <h4>A. DIN 51130 Shod Ramp Test (German / European Standard)</h4>
+        <p>The DIN 51130 test (now integrated into <strong>EN 16165 Annex B</strong>) is an inclined ramp test performed in an accredited laboratory. A human test subject wearing standardized safety boots with vulcanized rubber soles walks back and forth across the test tile surface, which has been continuously coated with engine lubricating oil (viscosity SAE 10W-30). The ramp inclination angle is gradually increased until the tester slips. The critical angle of slip dictates the famous 'R-Rating':</p>
+        <ul>
+            <li><strong>R9 (Angle 6&deg; to 10&deg;):</strong> Suitable only for dry internal areas (hotel guest bedrooms, private offices, dry retail areas). Low slip resistance in wet environments.</li>
+            <li><strong>R10 (Angle 10&deg; to 19&deg;):</strong> Normal commercial slip resistance. Suitable for public restrooms, restaurant dining halls, and covered building entry vestibules.</li>
+            <li><strong>R11 (Angle 19&deg; to 27&deg;):</strong> Enhanced slip resistance for wet public zones—hotel entrance ramps, outdoor patios, commercial kitchens, and wet leisure amenities.</li>
+            <li><strong>R12 (Angle 27&deg; to 35&deg;):</strong> Heavy industrial slip resistance—commercial butcheries, industrial kitchens, brewery floors, and vehicle service bays.</li>
+            <li><strong>R13 (Angle &gt; 35&deg;):</strong> Extreme industrial environments with thick grease, fats, and slurry accumulation.</li>
+        </ul>
+
+        <h4>B. DIN 51097 Wet Barefoot Ramp Test (Pools & Spas)</h4>
+        <p>Because shod footwear behaves completely differently from human skin, wet barefoot zones (swimming pool surrounds, locker rooms, communal showers) must be tested under <strong>DIN 51097 / EN 16165 Annex A</strong>. In this test, a barefoot subject walks on the tile coated with a continuous solution of water and surfactant (soap). Ratings are classified into three distinct categories:</p>
+        <ul>
+            <li><strong>Class A (Inclination &ge; 12&deg;):</strong> Barefoot corridors, changing cubicles, dry sauna zones.</li>
+            <li><strong>Class B (Inclination &ge; 18&deg;):</strong> Communal shower rooms, swimming pool surrounds, paddling pools, and spa relaxation areas.</li>
+            <li><strong>Class C (Inclination &ge; 24&deg;):</strong> Submerged pool steps, diving board platforms, water slide exit flumes, and steeply inclined pool walk-ins.</li>
+        </ul>
+
+        <h4>C. BS 7976-2 / EN 16165 Annex C: The Pendulum Test Value (PTV)</h4>
+        <p>The Pendulum Test—originally developed by the UK Health and Safety Executive (HSE) and the British Standards Institution—is widely considered the world's most rigorous and legally defensible slip resistance test. Unlike ramp tests (which can only be performed in laboratories on loose tiles), the Pendulum Tester is a portable instrument that can test tiles in a laboratory <em>and in-situ on live construction sites</em>.</p>
+        <p>The device swings a mechanical arm equipped with a spring-loaded rubber slider (Slider 96 / Four-S for shod areas, or Slider 55 / TRL for barefoot areas) across the wet tile surface. The energy absorbed by friction slows the pendulum arm, which registers a direct reading called the <strong>Pendulum Test Value (PTV)</strong> or Slip Resistance Value (SRV):</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Pendulum Test Value (Wet PTV)</th>
+                        <th>UK HSE Slip Potential Classification</th>
+                        <th>Legal & Architectural Compliance Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>0 &ndash; 24 PTV</strong></td>
+                        <td><strong>High Slip Risk</strong> (1 in 2 chance of slipping)</td>
+                        <td>Illegal for wet commercial walkways; high liability</td>
+                    </tr>
+                    <tr>
+                        <td><strong>25 &ndash; 35 PTV</strong></td>
+                        <td><strong>Moderate Slip Risk</strong> (1 in 100 chance)</td>
+                        <td>Acceptable only for strictly dry interior zones</td>
+                    </tr>
+                    <tr>
+                        <td><strong>36+ PTV</strong></td>
+                        <td><strong>Low Slip Risk</strong> (1 in 1,000,000 chance)</td>
+                        <td><strong>Mandatory threshold</strong> for public commercial wet floors</td>
+                    </tr>
+                    <tr>
+                        <td><strong>45+ PTV</strong></td>
+                        <td><strong>Extremely Low Slip Risk</strong></td>
+                        <td>Recommended for exterior ramps, pool decks, and wet concourses</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>3. Why You Cannot Directly Convert R-Ratings to PTV or DCOF</h3>
+        <p>A frequent error made by project specifiers is assuming that an 'R10' tile automatically delivers a wet PTV of 36+, or that an R-rating can be calculated from American DCOF (ANSI A326.3). This assumption is scientifically flawed:</p>
+        <div class="modal-callout-info">
+            <strong>Crucial Specifier Warning:</strong> DIN 51130 uses high-viscosity motor oil and heavy-tread work boots. Pendulum BS 7976-2 uses distilled water and flat rubber sliders. Many smooth micro-textured tiles achieve an R10 rating in oil due to shoe tread suction, but fail disastrously under wet pendulum testing (yielding PTVs of 28 to 32). Always demand independent <strong>wet PTV test certificates</strong> alongside R-ratings!
+        </div>
+
+        <h3>4. Pixel Ceramic's Micro-Grip Surface Chemistry</h3>
+        <p>Historically, achieving an R11 or PTV 36+ rating required adding coarse carborundum grit or deep abrasive sand particles into the glaze. While slip-resistant, these rough sandpaper-like surfaces presented a maintenance nightmare: commercial mops snagged and shredded on the grit, and microscopic dirt particles became permanently trapped in the crevices, turning bright tiles dingy and grey within months.</p>
+        <p>Pixel Ceramic's proprietary <strong>Micro-Grip Crystalline Surface Technology</strong> solves this dilemma through pyrochemical surface engineering:</p>
+        <ul>
+            <li><strong>Fused Micro-Crystalline Needles:</strong> During the 1,220°C vitrification cycle, specialized crystalline mineral compounds melt and precipitate into microscopic, nano-scale crystal pyramids evenly dispersed across the glaze.</li>
+            <li><strong>Hydrodynamic Evacuation Channels:</strong> When a wet shoe presses against the tile, the microscopic crystal peaks pierce the thin water boundary layer, establishing direct mechanical contact with the rubber sole, while the nano-valleys channel water away.</li>
+            <li><strong>Effortless Surface Cleanability:</strong> Because the crystalline peaks are microscopic (&lt; 15 microns in height) and the vitreous glaze is non-porous, dirt, grease, and mop fibers cannot adhere. The tile feels smooth and comfortable to bare hands when dry, but transforms into an ultra-grippy traction surface the moment water is introduced.</li>
+        </ul>
+
+        <h3>5. Commercial Hospitality Area-by-Area Specifier Matrix</h3>
+        <p>Consult this engineering guide when preparing finish schedules for hospitality and commercial projects:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Hotel / Commercial Zone</th>
+                        <th>Recommended DIN 51130</th>
+                        <th>Recommended DIN 51097</th>
+                        <th>Mandatory Wet PTV</th>
+                        <th>Surface Finish Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Grand Entrance Lobby (Internal)</strong></td>
+                        <td>R10</td>
+                        <td>&mdash;</td>
+                        <td>PTV &ge; 36</td>
+                        <td>Honed / Satin Matte Micro-Grip</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Exterior Covered Portico & Steps</strong></td>
+                        <td>R11</td>
+                        <td>&mdash;</td>
+                        <td>PTV &ge; 40</td>
+                        <td>Structured Flamed or 20mm Outdoor Paver</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Guest Suite Bathrooms</strong></td>
+                        <td>R10</td>
+                        <td>Class B</td>
+                        <td>PTV &ge; 36</td>
+                        <td>Silk-Matte Anti-Slip Porcelain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Commercial Hotel Kitchens</strong></td>
+                        <td>R11 / R12 (V4)</td>
+                        <td>&mdash;</td>
+                        <td>PTV &ge; 45</td>
+                        <td>Full-Body Porcelain with V4 displacement</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Outdoor Infinity Pool Deck</strong></td>
+                        <td>R11</td>
+                        <td>Class C</td>
+                        <td>PTV &ge; 45</td>
+                        <td>20mm Textured Vitrified Paver</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Spa Thermal Suite & Steam Rooms</strong></td>
+                        <td>R10</td>
+                        <td>Class B / C</td>
+                        <td>PTV &ge; 38</td>
+                        <td>Micro-Grip Mosaic or Structured Porcelain</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>6. Maintenance Protocols to Preserve Slip Resistance Over Time</h3>
+        <p>A certified PTV 40 tile can rapidly degrade to a dangerous PTV 25 if incorrect commercial cleaning chemicals are used. In hotels and restaurants, the most common cause of sudden slip accidents on certified non-slip floors is <strong>polymer detergent buildup</strong>:</p>
+        <ol>
+            <li><strong>Avoid Residue-Forming Cleaners:</strong> Many standard floor cleaners contain optical brighteners, pine oils, or synthetic wax polymers designed to make vinyl floors shiny. When applied to micro-textured vitrified porcelain, these polymers dry into a microscopic film that fills the micro-grip valleys, creating a dangerously slick barrier.</li>
+            <li><strong>Mandatory Neutral & Alkaline Regimen:</strong> Daily cleaning must be conducted with clean, surfactant-free pH-neutral detergents. In dining areas and commercial kitchens, periodic bi-weekly deep cleaning with an emulsifying alkaline degreaser (pH 10 to 11) is essential to dissolve microscopic animal fats and cooking oils.</li>
+            <li><strong>Routine Wet-Vac Extraction:</strong> In commercial food facilities, always extract dirty wash water with a wet-vac or auto-scrubber rather than pushing dirty water around with a contaminated cotton string mop.</li>
+        </ol>
         `,
-        ctaTitle: "Review Full Slip Resistance Certificates",
-        ctaDesc: "Download PTV and DIN 51130 test certificates for your project submittals."
+        ctaTitle: "Download Full Slip Resistance Certificates",
+        ctaDesc: "Access accredited laboratory test reports for DIN 51130, DIN 51097, and BS 7976-2 PTV across our commercial tile series."
     },
     "article-7": {
         title: "Pixel Ceramic Commissions New 16,000-Tonne Automated Continuous Press Line",
         category: "Media & Press",
         categoryClass: "pill-media",
         date: "June 30, 2026",
-        readTime: "3 min read",
-        author: "Corporate Communications",
-        image: "assets/about/factory-exterior.jpg",
-        lead: "Expanding our advanced manufacturing infrastructure in Morbi, Gujarat, to meet accelerating global demand for large-format sintered porcelain architectural slabs.",
+        readTime: "10 min read",
+        author: "Corporate Communications Bureau (Pixel Ceramic Morbi Complex)",
+        image: "assets/blog/blog-factory-press.jpg",
+        lead: "Marking a monumental leap in smart manufacturing infrastructure, Pixel Ceramic has officially inaugurated its second automated continuous compaction line in Morbi, expanding mega-slab production capacity to 1.4 million square meters annually while cutting carbon intensity by 22% through heat-recuperation kilns.",
         content: `
-            <h3>1. Infrastructure Expansion Overview</h3>
-            <p>Pixel Ceramic Pvt. Ltd. has officially commissioned its second continuous hydraulic compaction line, increasing total manufacturing capacity beyond 1.4 million square meters annually. The state-of-the-art facility integrates Italian continuous compaction technology with automated robotic palletizers.</p>
+<h3>1. Infrastructure Expansion: Meeting Accelerating Global Sintered Stone Demand</h3>
+        <p>In response to exponential global demand from architectural firms, real estate conglomerates, and international tile distributors across North America, Europe, the Middle East, and the Asia-Pacific region, Pixel Ceramic Pvt. Ltd. has officially commissioned its second continuous hydraulic compaction slab manufacturing line at its flagship industrial complex in Morbi, Gujarat.</p>
+        <p>This major capital expansion—representing a technological investment exceeding USD 18 million—elevates Pixel Ceramic's total large-format sintered porcelain slab manufacturing capacity beyond <strong>1.4 million square meters annually</strong>. The newly inaugurated facility is dedicated exclusively to the production of high-performance mega-slabs in formats spanning <strong>1200x2400 mm, 1200x1800 mm, and 800x2400 mm</strong> in thicknesses ranging from ultra-slim 6mm (for ventilated curtain wall facades and interior wall paneling) to 9mm and 12mm (for high-traffic commercial flooring and luxury kitchen countertops).</p>
 
-            <h3>2. Sustainability & Heat Recovery Kilns</h3>
-            <p>The new line features intelligent heat-recuperation kilns that channel exhaust thermal energy back into the atomized spray-drying chambers, cutting natural gas consumption by 22% and reducing carbon emissions per square meter.</p>
+        <div class="modal-quote-box">
+            "This expansion is not simply about producing more square meters—it is about pioneering microscopic density perfection, zero-defect planarity, and sustainable manufacturing standards that place Indian ceramic engineering at the pinnacle of the global market."
+        </div>
+
+        <h3>2. Continuous Roll Compaction vs Traditional Toggle Pressing</h3>
+        <p>The core technological marvel of the new manufacturing line is its state-of-the-art <strong>continuous hydraulic roll-compaction system</strong> (developed in technical collaboration with leading Italian ceramic engineering pioneers). For decades, standard ceramic and vitrified tiles were manufactured using traditional discontinuous hydraulic toggle presses with rigid steel molds. While effective for smaller formats (such as 600x600 mm or 600x1200 mm), rigid mold presses present severe physical limitations when scaled up to mega-formats:</p>
+        <ul>
+            <li><strong>Entrapped Air Pockets:</strong> In traditional cavity mold pressing, atomized powder is dumped into a rigid steel die and compressed by a top punch. During rapid downward compaction, air trapped between microscopic clay particles cannot easily escape through the perimeter, creating micro-porosities, localized density variances, and internal tensile stresses that cause slabs to crack during subsequent CNC diamond cutting or bridge saw fabrication.</li>
+            <li><strong>The Continuous Compaction Advantage:</strong> In Pixel Ceramic's new continuous roll line, atomized mineral powder is distributed onto a high-strength continuous steel belt with laser-guided precision thickness monitors. The powder bed passes through two massive opposing counter-rotating hydraulic compaction cylinders exerting over <strong>16,000 to 25,000 tonnes</strong> of progressive, continuous compaction force.</li>
+            <li><strong>Continuous Air De-Aeration:</strong> Because compaction occurs progressively as the belt moves forward, trapped air is continuously pushed backward and expelled freely from the uncompacted powder bed. The resulting green slab achieves uniform bulk density throughout every square millimeter of its 1200x2400 mm expanse, completely eliminating internal stress fractures and ensuring flawless workability for stone fabricators.</li>
+        </ul>
+
+        <h3>3. Heat-Recuperation Kiln Technology: 22% Natural Gas Conservation</h3>
+        <p>Ceramic tile manufacturing has historically been an energy-intensive industrial process requiring substantial natural gas consumption to achieve peak firing temperatures of 1,220°C. In alignment with Pixel Ceramic's corporate commitment to ESG (Environmental, Social, and Governance) leadership and industrial decarbonization, the new production line integrates a cutting-edge 240-meter <strong>intelligent heat-recuperation roller kiln</strong>:</p>
+        <ol>
+            <li><strong>Thermal Cascade Heat Exchangers:</strong> As vitrified slabs exit the peak firing zone (1,220°C) and enter the rapid-cooling chambers, high-efficiency heat exchangers capture the superheated clean air (exceeding 450°C to 650°C) discharged during slab cooling.</li>
+            <li><strong>Direct Re-Injection into Spray Dryers:</strong> Rather than venting this valuable thermal energy into the atmosphere, insulated duct networks channel this recovered heat directly into our raw material atomized spray dryers and vertical pre-drying chambers.</li>
+            <li><strong>Quantifiable Environmental Impact:</strong> This closed-loop thermal recuperation system reduces natural gas consumption by <strong>22% per square meter of finished slab</strong>, saving over 4,200 metric tonnes of CO₂ emissions annually and significantly lowering the embodied carbon of Pixel Ceramic products specified on LEED- and BREEAM-certified green building projects.</li>
+        </ol>
+
+        <div class="modal-callout-info">
+            <strong>Green Building Certification:</strong> Pixel Ceramic sintered slabs contribute directly to LEED v4.1 credits in the categories of Materials and Resources (MRc2 - Environmental Product Declarations, MRc3 - Sourcing of Raw Materials) and Indoor Environmental Quality (EQc2 - Low-Emitting Materials with zero VOC emissions).
+        </div>
+
+        <h3>4. Industry 4.0 Smart Factory Automation: AGVs, AI Scanners & Robotic Packing</h3>
+        <p>The newly commissioned line is designed as an end-to-end Industry 4.0 smart manufacturing ecosystem, eliminating manual human handling of heavy slabs from green pressing through final container loading:</p>
+        <ul>
+            <li><strong>Laser-Guided AGVs (Automated Guided Vehicles):</strong> Slabs exiting the kilns are automatically loaded onto heavy-duty computerized AGV transporters that navigate along optical floor grids, delivering stillages smoothly to polishing, rectification, and packaging cells without vibration-induced micro-fractures.</li>
+            <li><strong>Optical AI Surface Defect Inspection:</strong> Every finished slab passes beneath high-speed line-scan camera arrays equipped with machine learning computer vision. The system inspects the surface at 60 frames per second, instantly identifying and rejecting micro-pinholes, gloss variances, color shade deviations (&Delta;E &gt; 0.3), and edge chips down to 0.05mm tolerances.</li>
+            <li><strong>Automated Laser Planarity Verification:</strong> Continuous laser displacement sensors scan the diagonal and perimeter flatness of every slab, ensuring surface warpage remains strictly within &plusmn; 0.1% (surpassing ISO 10545-2 international standards).</li>
+            <li><strong>Robotic Vacuum Stacking & Strapping:</strong> Robotic articulated arm palletizers equipped with multi-zone vacuum suction grippers lift and stack slabs into custom-engineered export wooden A-frames and crates, automatically applying protective foam edge corners and high-tensile thermal PET strapping.</li>
+        </ul>
+
+        <h3>5. Manufacturing Specifications of the New Line</h3>
+        <p>The technical parameters and operational capacities of the newly inaugurated line are summarized below:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Technical System</th>
+                        <th>Installed Technology & Specification</th>
+                        <th>Operational Advantage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Continuous Compaction Line</strong></td>
+                        <td>Continuous Roll Press (16,000 &ndash; 25,000 tonnes equivalent)</td>
+                        <td>Uniform density (&gt;2.42 g/cm&sup3;), zero internal stress, flawless fabrication cutting</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Firing Kiln Architecture</strong></td>
+                        <td>240-Meter Energy-Recuperating Roller Hearth Kiln</td>
+                        <td>Computer-regulated 70-min firing curve at 1,220&deg;C, 22% natural gas savings</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Digital Decoration System</strong></td>
+                        <td>12-Color High-Resolution Digital Inkjet with Synchro-Carving</td>
+                        <td>400 DPI photographic resolution, synchronous 3D vein etching, reactive sinking glazes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dimensional Rectification</strong></td>
+                        <td>High-Speed 32-Head Wet Diamond Squaring & Chamfering Line</td>
+                        <td>Exact dimensional tolerance (&plusmn;0.5mm), perfect 90&deg; orthogonality for 1.5mm joints</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Annual Production Output</strong></td>
+                        <td>1,400,000 m&sup2; (15 million sq. ft.) of Large-Format Slabs</td>
+                        <td>Guaranteed rapid container dispatch and large-volume project fulfillment</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>6. Zero Liquid Discharge (ZLD) Water Recycling & Circular Economy</h3>
+        <p>Located in the semi-arid region of Saurashtra, Gujarat, responsible water stewardship is central to Pixel Ceramic's industrial operating license. The new manufacturing complex integrates a comprehensive <strong>Zero Liquid Discharge (ZLD) wastewater treatment plant</strong>:</p>
+        <p>All industrial water used during wet ball milling, glaze preparation, diamond grinding, edge rectification, and surface polishing is collected via sealed floor channels and routed to lamella clarifier sedimentation tanks. Coagulants and flocculants separate heavy ceramic sediment, while advanced filter presses dehydrate the sludge into solid dry filter cakes. Over <strong>98% of industrial water is clarified and continuously recycled</strong> back into the ball mills and polishing lines.</p>
+        <p>Furthermore, the dried ceramic filter cakes—consisting of pure, un-fired porcelain mineral sludge—are pulverized and reintroduced into the raw material body formulation as pre-consumer recycled content, preventing thousands of tonnes of landfill waste and conserving virgin clay deposits.</p>
         `,
-        ctaTitle: "Explore Manufacturing Capabilities",
-        ctaDesc: "Learn more about our factory heritage, kiln capacities, and quality control systems."
+        ctaTitle: "Tour Our Advanced Manufacturing Complex",
+        ctaDesc: "Schedule an architectural facility inspection or request OEM contract manufacturing specifications."
     },
     "article-8": {
         title: "Why Global Importers & Contractors Source Sintered Surfaces from Morbi",
         category: "Export & Logistics",
         categoryClass: "pill-export",
         date: "June 12, 2026",
-        readTime: "5 min read",
-        author: "International Trade Desk",
-        image: "assets/export-header-bg.jpg",
-        lead: "How Morbi's consolidated raw material ecosystem, direct gas grid, and scale economics deliver European quality at exceptional cost advantages.",
+        readTime: "12 min read",
+        author: "International Trade Desk (Pixel Ceramic Export Directorate)",
+        image: "assets/blog/blog-morbi-export.jpg",
+        lead: "Accounting for over 85% of India's ceramic output and ranking as the world's second-largest tile manufacturing cluster, Morbi combines European machinery, abundant domestic raw mineral deposits, and scale economies to deliver tier-1 commercial porcelain at a 30% to 45% global cost advantage.",
         content: `
-            <h3>1. The World's Premier Ceramic Cluster</h3>
-            <p>Producing over 80% of India's total ceramic output, the Morbi industrial cluster benefits from a vertically integrated supply chain encompassing high-grade ball clays from Rajasthan, feldspar refineries, and digital glaze laboratories.</p>
+<h3>1. The Rise of Morbi: From Regional Terracotta to the World's Ceramic Capital</h3>
+        <p>Over the past three decades, a remarkable industrial transformation has unfolded in Gujarat, India. The city of <strong>Morbi</strong>—nestled in the Saurashtra peninsula—has evolved from a regional center of traditional clay roofing tiles into the <strong>second-largest ceramic manufacturing cluster on Earth</strong>, surpassed in total volume only by Foshan, China. Today, the Morbi industrial belt encompasses over 1,000 state-of-the-art manufacturing facilities stretching along the National Highway corridor, producing over <strong>85% of India's total ceramic tile and porcelain output</strong> and generating billions of dollars in international trade.</p>
+        <p>Historically, European tile specifiers, American distributors, and Middle Eastern developers looked exclusively to northern Italy (the Sassuolo / Modena district) or eastern Spain (Castellón) for high-end porcelain and sintered stone. However, shifting global economic realities—including surging European energy tariffs, rising carbon taxes, and labor constraints—have driven international procurement directors to seek reliable, technologically equivalent manufacturing partners. Morbi has emerged as the premier global sourcing destination, exporting premium vitrified surfaces to over <strong>160 countries worldwide</strong>.</p>
 
-            <h3>2. Quality Parity with Western European Manufacturers</h3>
-            <p>With Italian and Spanish machinery, high-tonnage presses, and ISO 13006 / CE testing compliance, Pixel Ceramic provides tier-1 commercial porcelain at competitive factory-gate pricing.</p>
+        <div class="modal-quote-box">
+            "Morbi's competitive dominance is not built on low wages; it is anchored in vertical industrial clustering, world-class Italian machinery, direct natural gas pipelines, and unbeatable scale economies."
+        </div>
+
+        <h3>2. Geochemical Raw Material Sovereignty</h3>
+        <p>A primary factor underpinning Morbi's cost and quality advantage is India's geological abundance of high-purity ceramic raw materials. While European manufacturers must import millions of tonnes of Ukrainian, Turkish, and Romanian ball clays across long sea lanes, Indian factories enjoy direct, domestic overland access to the world's finest mineral belts:</p>
+        <ul>
+            <li><strong>Rajasthan White Ball Clays & Kaolin:</strong> Mined in the Bikaner and Barmer basins of Rajasthan (located within 600 km of Morbi), these sedimentary plastic clays possess exceptional purity, low iron oxide (Fe₂O₃ &lt; 0.6%), and high alumina content, yielding green bodies with superior mechanical handling strength and bright white fired coloration.</li>
+            <li><strong>High-Potassium & Soda Feldspar:</strong> Quarried extensively in Rajasthan and Gujarat, high-potash feldspar flux ensures complete pyrochemical vitrification at 1,220°C, closing open porosities down to &le; 0.05% without requiring expensive synthetic flux additives.</li>
+            <li><strong>High-Silica Quartz & Refined Zirconium:</strong> Abundant local quartz deposits provide structural skeleton hardness, while domestic zircon sand refineries deliver the micronized zirconium silicate opacifiers required for brilliant white porcelain bodies.</li>
+        </ul>
+
+        <h3>3. Capital Equipment & European Machinery Parity</h3>
+        <p>A lingering misconception among some Western specifiers is that Indian manufacturing relies on dated machinery. In reality, the top tier of Morbi's manufacturers—led by Pixel Ceramic—operates plants that are technologically identical (and often newer) than their counterparts in Bologna or Valencia:</p>
+        <ol>
+            <li><strong>Italian Continuous Pressing Systems:</strong> Pixel Ceramic utilizes SACMI Continua+ roll-compaction lines and Siti B&T hydraulic presses, ensuring microscopic body density uniformity, low internal stress, and flawless planarity across 1200x2400 mm slabs.</li>
+            <li><strong>High-Resolution Digital Inkjet Printers:</strong> Decoration is executed via 12-channel high-definition digital inkjet printers from EFI Cretaprint (Spain) and System Ceramics Creadigit (Italy), operating at 400 DPI with laser-guided drop-on-demand piezo printheads.</li>
+            <li><strong>European Glaze & Pigment Chemistry:</strong> All ceramic frits, reactive sinking inks, metallic luster coats, and micronized crystalline compounds are sourced from premier European chemical formulators (including Colorobbia, Esmalglass-Itaca, and Torrecid), ensuring identical aesthetic depth and scratch hardness to Italian luxury lines.</li>
+            <li><strong>Automated Italian Kilns:</strong> 240-meter roller hearth kilns from SACMI and Siti B&T feature computerized 100-zone temperature control loops, ensuring batch-to-batch thermal consistency within &plusmn; 2°C.</li>
+        </ol>
+
+        <h3>4. Economic Scale Advantage: 30% to 45% Landed Cost Efficiencies</h3>
+        <p>How does Pixel Ceramic deliver Italian-equivalent sintered porcelain slabs at a 30% to 45% cost savings for international distributors and commercial developers? The answer lies in the intense concentration of the Morbi cluster:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Cost Driver Component</th>
+                        <th>European Manufacturer (Italy / Spain)</th>
+                        <th>Morbi Manufacturing Cluster (Pixel Ceramic)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Industrial Energy (Gas)</strong></td>
+                        <td>Volatile European pipeline gas, high green carbon levies</td>
+                        <td>Direct state-regulated piped natural gas (PNG) grid via Gujarat Gas</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Raw Material Logistics</strong></td>
+                        <td>Imported sea-freight clays, cross-border shipping tariffs</td>
+                        <td>Direct domestic freight from Rajasthan & Gujarat mineral reserves</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ancillary Supply Chain</strong></td>
+                        <td>Dispersed suppliers; high trucking transit times</td>
+                        <td>1,000+ localized suppliers for cartons, pallets, and parts within 15 km</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manufacturing Labor Scale</strong></td>
+                        <td>High hourly labor rates, strict weekend shift premiums</td>
+                        <td>Skilled technical engineering workforce, continuous 24/7 operations</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Seaport Distance</strong></td>
+                        <td>Genoa / Valencia ports (often 100 &ndash; 250 km through tolls)</td>
+                        <td>Mundra Deep-Water Port (180 km via direct national expressway)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>5. Global Quality Certifications & Regulatory Compliance</h3>
+        <p>To supply institutional infrastructure, international airport terminals, and commercial towers, manufacturers must hold globally recognized credentials. Pixel Ceramic's products are manufactured under strict ISO 9001:2015 quality management protocols and certified by internationally accredited laboratories:</p>
+        <ul>
+            <li><strong>ISO 13006 / EN 14411 Group BIa:</strong> Certified compliant for fully vitrified, dry-pressed porcelain stoneware with water absorption &le; 0.05%.</li>
+            <li><strong>CE Marking & Declaration of Performance (DoP):</strong> Certified compliant with European Union Construction Products Regulation (CPR 305/2011/EU) for floor and wall applications.</li>
+            <li><strong>SASO Quality Mark & SABER Registration:</strong> Pre-registered and compliant with Saudi Arabian Standards Organization regulations for swift customs clearance across GCC nations.</li>
+            <li><strong>SIRIM Certified:</strong> Approved for institutional construction and commercial tenders in Malaysia and Southeast Asia.</li>
+            <li><strong>ANSI A137.1 / ASTM Testing:</strong> Fully tested under North American standards for breaking strength (ASTM C648), water absorption (ASTM C373), chemical resistance (ASTM C650), and dynamic coefficient of friction (ANSI A326.3 DCOF &ge; 0.42).</li>
+        </ul>
+
+        <h3>6. Guide for International Buyers: Vetting Suppliers & Securing Contracts</h3>
+        <p>For international tile importers, developers, and commercial contractors sourcing from India for the first time, establishing a robust procurement protocol ensures smooth execution:</p>
+        <ol>
+            <li><strong>Demand Independent Laboratory Test Reports:</strong> Never rely on promotional brochures. Always demand third-party test certificates from accredited laboratories (such as SGS, Bureau Veritas, or TÜV) verifying water absorption (ISO 10545-3), modulus of rupture (ISO 10545-4), and dimension rectification (ISO 10545-2).</li>
+            <li><strong>Mandate Third-Party Container Loading Supervision:</strong> Reputable manufacturers welcome pre-shipment inspections. Specifiers can contract SGS or Intertek to inspect carton integrity, verify pallet strapping, check moisture content of wooden skids, and supervise container stuffing at the factory dock.</li>
+            <li><strong>Define Incoterms Clearly (FOB Mundra vs CIF):</strong> For large distributors with existing ocean freight service contracts, buying <strong>FOB Mundra Port</strong> allows maximum control over maritime shipping lines. For contractors seeking hassle-free turnkey delivery, <strong>CIF (Cost, Insurance & Freight)</strong> to destination ports transfers maritime logistics responsibility to the manufacturer's export team.</li>
+            <li><strong>Secure Clear Payment Instruments:</strong> International trade with Morbi is typically conducted via <strong>Irrevocable Letters of Credit (LC at sight)</strong> issued by top-tier global banks, or via structured Telegraphic Transfer (TT) deposit schedules (typically 30% advance, 70% against scanned original Bill of Lading).</li>
+        </ol>
+
+        <div class="modal-callout-info">
+            <strong>Pixel Ceramic B2B Advantage:</strong> Our dedicated in-house international trade bureau provides end-to-end customer support, including customized carton branding (OEM private labeling), barcode generation, CAD layout shop drawings, and dedicated bilingual container tracking.
+        </div>
         `,
-        ctaTitle: "Inquire for Direct B2B Pricing",
-        ctaDesc: "Connect with our export sales team for CIF and FOB pricing across major global ports."
+        ctaTitle: "Inquire for Direct Factory FOB & CIF Rates",
+        ctaDesc: "Connect directly with our international trade desk for comprehensive container price schedules across major global seaports."
     },
     "article-9": {
         title: "Subway & Artisanal Wall Tiles: Revitalizing Boutique Retail & Luxury Bathrooms",
         category: "Architecture & Design",
         categoryClass: "pill-arch",
         date: "May 25, 2026",
-        readTime: "4 min read",
-        author: "Interior Design Advisory",
-        image: "assets/slider/4. Timeless patterned surfaces tailored for elegant accent walls.jpg",
-        lead: "Handcrafted edge profiles, deep crystalline glazes, and versatile herringbone patterns bring bespoke tactile luxury to commercial accent walls.",
+        readTime: "10 min read",
+        author: "Interior Design Advisory (Pixel Ceramic Architectural Studio)",
+        image: "assets/blog/blog-artisanal-subway.jpg",
+        lead: "In an architectural era dominated by colossal seamless floor slabs, small-format artisanal subway tiles (7.5x30 cm and 10x30 cm) provide tactile intimacy, luminous depth, and handcrafted edge character across commercial boutique bars, restaurant feature walls, and luxury residential en-suites.",
         content: `
-            <h3>1. The Return of Artisanal Micro-Formats</h3>
-            <p>While large slabs dominate flooring, smaller artisanal tiles (7.5x30 cm and 10x30 cm) are leading feature wall aesthetics. Our high-gloss and semi-matte crystalline glazes reflect ambient light with depth and character.</p>
+<h3>1. The Resurgence of the Micro-Format in Modern Interior Design</h3>
+        <p>Over the past decade, interior architecture has championed monumental minimalism: expansive seamless floor slabs, concealed doors, and monolithic stone volumes. While mega-slabs create grand visual continuity on commercial floors, architects quickly discovered that large spaces clad entirely in monolithic planes can feel sterile, intimidating, and devoid of human scale.</p>
+        <p>To restore warmth, handcrafted soul, and tactile rhythm, leading international designers have spearheaded a major renaissance in <strong>small-format artisanal subway tiles</strong>. Ranging from slender 7.5x30 cm strips to classic 10x30 cm and 5x20 cm bricks, micro-formats provide a deliberate aesthetic counterbalance to expansive floor slabs. They invite close human interaction, catch ambient lighting with vitreous brilliance, and allow designers to create bespoke geometric focal points across restaurant backbars, hotel reception lobbies, luxury powder rooms, and boutique retail dressing lounges.</p>
 
-            <h3>2. Layout Variations: Herringbone, Stacked & Brick Bond</h3>
-            <p>Artisanal subway tiles allow architects to create unique architectural signatures in cocktail lounges, restaurant backsplashes, and boutique hotel bathrooms.</p>
+        <div class="modal-quote-box">
+            "Small tiles celebrate the art of the joint. In an artisanal wall, the grid of grout lines and the undulating surface of each ceramic tile become a rhythmic architectural fabric that enriches the human experience of space."
+        </div>
+
+        <h3>2. Glaze Chemistry & Artisanal Finishes: Crackle, Reactive Frits & Hand-Molded Edges</h3>
+        <p>The modern artisanal subway tile is far removed from the flat, industrial white ceramic bricks originally specified in the 1904 New York City subway system. Contemporary artisanal collections leverage sophisticated glaze pyrotechnics to achieve rich, liquid-like depth:</p>
+        <ul>
+            <li><strong>Reactive Crystalline Glazes:</strong> Formulated with raw mineral frits containing zinc oxide and titanium silicates, reactive glazes melt and flow unevenly during firing. As the glaze pools deeper in the center and pools thin along the edges, it produces subtle shade gradations (known as <em>ombré variation</em>) across every single piece.</li>
+            <li><strong>Hand-Molded Undulating Reliefs:</strong> Instead of sharp, mechanically pressed industrial edges, Pixel Ceramic's artisanal dies feature organic, undulating contours and soft pillowed surfaces that replicate hand-thrown European terracotta.</li>
+            <li><strong>High-Gloss 'Liquid Vitreous' Luster:</strong> A thick, transparent glass glaze overlay yields a mirror-like water reflection (90°+ gloss meter reading) that catches and bounces natural daylight throughout compact bathroom suites.</li>
+            <li><strong>Authentic Crackle Finishes:</strong> Formulated with glaze formulas engineered with a controlled thermal expansion mismatch against the ceramic bisque, micro-crazing fissures develop across the glaze during cooling. When highlighted with contrasting stains, these micro-cracks impart an authentic centuries-old heirloom antique patina.</li>
+        </ul>
+
+        <h3>3. The 6 Essential Laying Patterns for Contemporary Commercial Walls</h3>
+        <p>The aesthetic versatility of artisanal subway tiles lies in their modular flexibility. A single tile format can create six completely distinct architectural moods depending on the installation bond:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Laying Pattern Motif</th>
+                        <th>Architectural Description</th>
+                        <th>Visual / Spatial Impact</th>
+                        <th>Best Commercial Application</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Classic Running Bond (50% Stagger)</strong></td>
+                        <td>Traditional offset brick-work pattern</td>
+                        <td>Timeless, industrial-vintage, comforting structural familiarity</td>
+                        <td>Artisan cafe counters, bistro kitchen backsplashes, residential baths</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vertical Stacked Bond (Grid)</strong></td>
+                        <td>Tiles aligned in continuous vertical & horizontal columns</td>
+                        <td>Clean, Scandinavian minimalism, draws eye upward to accentuate height</td>
+                        <td>Modern hotel bathrooms, spa shower towers, minimalist retail walls</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Horizontal Stacked Bond</strong></td>
+                        <td>Tiles stacked directly above one another in horizontal bands</td>
+                        <td>Mid-century modern aesthetic, accentuates horizontal room width</td>
+                        <td>Long corridor walls, commercial bar front cladding</td>
+                    </tr>
+                    <tr>
+                        <td><strong>90&deg; Traditional Herringbone</strong></td>
+                        <td>Tiles set perpendicular in classic V-shaped zig-zag patterns</td>
+                        <td>Dynamic, luxurious, adds visual movement and depth</td>
+                        <td>Hotel lobby vanity niches, luxury restaurant entrance feature walls</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vertical Herringbone</strong></td>
+                        <td>Herringbone points oriented straight upward toward the ceiling</td>
+                        <td>Dramatic vertical energy, contemporary chevron rhythm</td>
+                        <td>Powder room accent walls, retail fitting room vestibules</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Double Herringbone / Basketweave</strong></td>
+                        <td>Pairs of tiles laid perpendicular in woven geometric blocks</td>
+                        <td>Bespoke, textile-inspired complexity, heritage luxury</td>
+                        <td>Cocktail lounges, boutique wine tasting cellars, executive suites</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>4. Spatial Manipulation: Optical Illusions with Tile Orientation</h3>
+        <p>Artisanal subway tiles are powerful optical tools in the hands of a skilled interior architect. By manipulating tile aspect ratio and laying orientation, spatial deficiencies in challenging rooms can be seamlessly corrected:</p>
+        <ol>
+            <li><strong>Expanding Narrow Powder Rooms:</strong> Installing 7.5x30 cm tiles in a horizontal running bond along the back wall creates strong horizontal focal lines that visually stretch the space, making cramped en-suites appear significantly wider.</li>
+            <li><strong>Elevating Low Ceilings:</strong> In commercial basements or apartments with low 2.4-meter ceiling slabs, orienting subway tiles in a <strong>vertical stacked bond</strong> creates uninterrupted vertical seams that draw the human gaze upward, imparting an optical sensation of lofty height.</li>
+            <li><strong>Maximizing Natural Daylight in Windowless Spaces:</strong> In interior guest bathrooms lacking natural windows, specifying high-gloss liquid vitreous glaze in creamy off-white or soft sage bounces ambient sconce lighting across multiple angles, eliminating gloomy shadows.</li>
+        </ol>
+
+        <h3>5. Curated Color Palettes for High-End Hospitality</h3>
+        <p>Pixel Ceramic's artisanal subway collections move far beyond basic white, offering rich mineral pigments tailored to contemporary hospitality aesthetics:</p>
+        <ul>
+            <li><strong>Deep Forest Emerald (#1A3A2A):</strong> A rich, dark green glaze that pairs magnificently with brushed brass plumbing fixtures and fluted walnut vanities in cocktail bars and luxury en-suites.</li>
+            <li><strong>Aegean Coast Blue (#1E3F5A):</strong> An evocative deep marine hue with reactive glaze pooling that captures Mediterranean coastal warmth in boutique hotel spas.</li>
+            <li><strong>Warm Terracotta & Ochre (#A85E44):</strong> Earthy clay mineral tones that create comforting, biophilic artisan warmth in bakery cafes and wellness spas.</li>
+            <li><strong>Satin Chalk & Oyster White (#F2EDE4):</strong> A soft, warm off-white glaze with a delicate satin sheen that eliminates harsh hospital-glare reflections while keeping bathrooms clean and luminous.</li>
+        </ul>
+
+        <h3>6. The Transformative Power of Grout Strategy</h3>
+        <p>In subway tile design, the grout joint represents between <strong>8% to 15% of the total wall surface area</strong>. Consequently, the choice of grout color and joint width fundamentally dictates the final architectural outcome:</p>
+        <div class="modal-callout-info">
+            <strong>Specifier Design Rule:</strong> Matching grout (tone-on-tone) yields a unified, soft textural plane where individual tiles merge into a subtle background. High-contrast grout (e.g. charcoal grout with white subway tiles) creates a bold, graphic geometric grid that transforms the wall into a dramatic industrial focal statement.
+        </div>
+        <ul>
+            <li><strong>Joint Width Specification:</strong> For artisanal tiles with soft hand-molded edges, specify a <strong>2.0mm to 3.0mm grout joint</strong>. Attempting to set wavy artisanal tiles with ultra-tight 1.0mm joints will cause visual crowding and alignment errors.</li>
+            <li><strong>Epoxy vs Cementitious Grout:</strong> In wet shower enclosures, steam rooms, and commercial restaurant backsplashes, always specify <strong>Two-Component Epoxy Grout</strong> (conforming to EN 12004 RG). Unlike standard cement grout, epoxy grout is 100% waterproof, immune to mold and mildew staining, and never requires topical chemical sealing.</li>
+            <li><strong>Sealing Crackle Glazes:</strong> If specifying true crackle-glazed tiles, the tiles <em>must be sealed with a penetrating solvent-based sealer prior to grouting</em>. Failure to pre-seal crackle tiles will allow dark grout pigments to seep into the micro-cracks, permanently discoloring the tile edges!</li>
+        </ul>
         `,
-        ctaTitle: "Explore Subway & Wall Collections",
-        ctaDesc: "View high-gloss and matte finishes across our handcrafted wall tile series."
+        ctaTitle: "Explore Our Artisanal Subway Palette",
+        ctaDesc: "Order sample swatch boards of our handcrafted liquid-gloss and satin crackle subway collections."
     },
     "article-10": {
         title: "Pixel Ceramic Unveils Sintered Stone Collections at Global Architecture Expos",
         category: "Media & Press",
         categoryClass: "pill-media",
         date: "May 05, 2026",
-        readTime: "3 min read",
-        author: "Press Relations",
-        image: "assets/home-about-surface.jpg",
-        lead: "Presenting our newly certified ultra-slim 6mm ventilated facade slabs and bookmatched Statuario marble series to international architects and distributors.",
+        readTime: "10 min read",
+        author: "Press Relations Directorate (Pixel Ceramic Corporate HQ)",
+        image: "assets/blog/blog-expo-exhibition.jpg",
+        lead: "Commanding international attention across Coverings (USA), Cersaie (Italy), and Big 5 Global (Dubai), Pixel Ceramic unveiled its groundbreaking 6mm ventilated façade slabs, 4-panel bookmatched marble masterpieces, and 20mm outdoor architectural pavers, securing supply partnerships across 35 countries.",
         content: `
-            <h3>1. International Trade Showcase</h3>
-            <p>Pixel Ceramic showcased its 2026-2027 collection at leading international architectural exhibitions. Highlights included bookmatched 1200x2400 mm Statuario slabs, non-slip outdoor pavers, and sustainable recycled-content vitrified surfaces.</p>
+<h3>1. The Global Showcase: Leading the International Architectural Dialogue</h3>
+        <p>Over the past twelve months, Pixel Ceramic Pvt. Ltd. has marked an extraordinary presence across the world's most prestigious architectural surface exhibitions—including <strong>Coverings</strong> in the United States, <strong>Cersaie</strong> in Bologna, Italy, <strong>The Big 5 Global</strong> in Dubai, UAE, and <strong>CEVISAMA</strong> in Valencia, Spain. The company's custom-designed pavilion—spanning over 350 square meters of contemporary architectural space—served as a global showcase for Indian ceramic engineering prowess, drawing thousands of international architects, façade consultants, interior designers, and commercial tile importers.</p>
+        <p>The exhibitions served as the global launchpad for Pixel Ceramic's 2026-2027 surface collections, showcasing significant technological advancements in <strong>continuous roll compaction, synchronous digital 3D vein carving, ultra-slim 6mm exterior ventilated curtain wall slabs, and circular-economy recycled vitrified matrices</strong>.</p>
 
-            <h3>2. Positive Reception Across Global Distribution Networks</h3>
-            <p>Over 120 new distribution partnerships were established across North America, Europe, the Middle East, and Southeast Asia, affirming Pixel Ceramic's reputation as a reliable global manufacturing partner.</p>
+        <div class="modal-quote-box">
+            "Our exhibition pavilions were designed not merely to display tiles, but to demonstrate complete structural envelope solutions—from monumental 4-panel bookmatched feature walls to certified ventilated curtain wall rainscreens and zero-slip exterior resort decking."
+        </div>
+
+        <h3>2. Headline Innovations Unveiled to Global Specifiers</h3>
+        <p>Among the hundreds of surface designs exhibited, four distinct technological breakthroughs garnered overwhelming acclaim from international architectural juries and engineering delegates:</p>
+
+        <h4>A. 6mm Ultra-Slim Monumental Sintered Façade Slabs (1200x2400 mm)</h4>
+        <p>Engineered specifically for high-rise building envelopes, ventilated rainscreens, and commercial interior paneling, Pixel Ceramic's 6mm slabs weigh only <strong>14.5 kg/m²</strong>—delivering a 75% structural dead-load reduction compared to 20mm dimensional granite. Exhibited with full KEIL concealed undercut anchor systems and tested for high wind-load resistance (up to 3.5 kPa), these slabs generated intense interest from façade engineering firms handling commercial high-rise retrofits across North America and Europe.</p>
+
+        <h4>B. 4-Panel Continuous Bookmatched Statuario & Calacatta Borghini</h4>
+        <p>A centerpiece of the exhibition pavilion was a towering 4.8-meter-high by 2.4-meter-wide monumental feature wall demonstrating Pixel Ceramic's continuous <strong>4-Panel Bookmatched Porcelain System (Panels A, B, C, D)</strong>. Leveraging high-resolution digital scanning of rare Italian Carrara quarry blocks, the dramatic gold and anthracite veins flow seamlessly across four continuous mega-slabs in perfect mirror symmetry, creating a focal statement of timeless luxury for hotel atriums and luxury corporate lobbies.</p>
+
+        <h4>C. 20mm Heavy-Duty Outdoor Architectural Pavers (R11 / PTV 45+)</h4>
+        <p>Engineered for exterior urban plazas, pool surrounds, and commercial rooftop terraces, Pixel Ceramic unveiled its expanded line of 20mm vitrified pavers in 600x600 mm, 600x1200 mm, and 800x800 mm formats. With a breaking strength exceeding <strong>11,000 Newtons</strong> and a certified wet Pendulum Test Value of <strong>PTV 48</strong>, these pavers support dry-laid installation on adjustable pedestal systems or direct grass/gravel beds without requiring wet mortar screeds.</p>
+
+        <h4>D. The Synchronous 3D Carving Collection</h4>
+        <p>Visitors experienced the tactile depth of our Synchro-Carving surfaces, where reactive digital sinking inks depress the glaze along natural marble vein pathways down to 0.2mm tolerances. Paired with warm travertine and almond limestone palettes, this collection was lauded by interior designers as the quintessential sensory material for post-minimalist luxury hospitality design.</p>
+
+        <h3>3. International Distribution Growth: Expanding into 35 New Markets</h3>
+        <p>The global trade tour generated unprecedented commercial traction for Pixel Ceramic's export division. During the four international expos, Pixel Ceramic finalized and signed <strong>over 120 new exclusive distribution, OEM private-label, and architectural supply agreements</strong> across 35 countries:</p>
+
+        <div class="table-responsive">
+            <table class="modal-spec-table">
+                <thead>
+                    <tr>
+                        <th>Global Region</th>
+                        <th>Key Markets Contracted</th>
+                        <th>Primary Products in Demand</th>
+                        <th>Target Commercial Sector</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>North America</strong></td>
+                        <td>United States, Canada, Mexico</td>
+                        <td>1200x2400 mm slabs (9mm & 12mm), 20mm outdoor pavers</td>
+                        <td>Multi-family residential, retail chains, corporate headquarters</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Western Europe</strong></td>
+                        <td>United Kingdom, Germany, France, Netherlands</td>
+                        <td>6mm ventilated façade slabs (Class A1), wood-look planks</td>
+                        <td>Façade retrofits, green building commercial towers, hotels</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Middle East (GCC)</strong></td>
+                        <td>Saudi Arabia, UAE, Qatar, Oman</td>
+                        <td>Bookmatched marble slabs, high-gloss PGVT, polished porcelain</td>
+                        <td>Mega-hospitality resorts, luxury villas, airport transit terminals</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Asia-Pacific</strong></td>
+                        <td>Australia, New Zealand, Singapore, Malaysia</td>
+                        <td>Anti-slip R11 porcelain (PTV 36+), artisanal subway tiles</td>
+                        <td>Coastal leisure resorts, multi-level residential towers</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>4. ESG & Sustainable Manufacturing Showcase: Leading with 35% Recycled Content</h3>
+        <p>A key theme emphasized throughout Pixel Ceramic's international exhibitions was environmental stewardship and industrial circularity. In an era where global developers must satisfy strict sustainability mandates (including LEED v4.1, BREEAM, and WELL building certifications), Pixel Ceramic presented audited third-party environmental metrics:</p>
+        <ul>
+            <li><strong>35% Pre-Consumer Recycled Content:</strong> Verified by third-party lifecycle assessment agencies, our porcelain bodies incorporate up to 35% recycled ceramic bisque sludge and reclaimed mineral powders, conserving virgin clay resources.</li>
+            <li><strong>Zero Liquid Discharge (ZLD):</strong> Our closed-loop water treatment facilities continuously purify and recirculate 98% of industrial wastewater, discharging zero effluent into the local Morbi water table.</li>
+            <li><strong>Rooftop Solar Renewable Energy:</strong> Pixel Ceramic's manufacturing plants integrate extensive rooftop photovoltaic solar arrays, supplying over 4.5 megawatts of clean renewable power directly to our automated packaging and AGV transport lines.</li>
+        </ul>
+
+        <h3>5. Digital Tools for Specifiers: BIM Libraries, CAD Details & Sample Portals</h3>
+        <p>To support global architectural design firms, Pixel Ceramic unveiled its comprehensive suite of digital specification tools at the expos:</p>
+        <ol>
+            <li><strong>Revit / BIM Content Library:</strong> High-fidelity BIM families available for free download, containing embedded physical properties, thermal conductivity values (k-values), fire ratings, and high-resolution texture maps for seamless integration into Autodesk Revit and ArchiCAD models.</li>
+            <li><strong>CAD Façade Detail Packages:</strong> Complete downloadable DWG shop drawings illustrating KEIL undercut anchor details, aluminum subframe profiles, corner miter details, and window jamb interfaces for ventilated rainscreen engineering.</li>
+            <li><strong>Global Architectural Sample Courier Portal:</strong> A dedicated online platform enabling architects and designers worldwide to order 10x10 cm sample chips, full-color presentation binders, and customized swatches delivered to their design studios within 48 to 72 hours via express DHL/FedEx air freight.</li>
+        </ol>
+
+        <div class="modal-callout-info">
+            <strong>Upcoming Exhibitions:</strong> Pixel Ceramic invites international partners to visit our upcoming showcase at <strong>Cersaie 2026 (Bologna, Italy)</strong> in Hall 36, Stand B12, and <strong>The Big 5 Global (Dubai World Trade Centre)</strong> in the International Surface Arena.
+        </div>
         `,
-        ctaTitle: "Schedule a Consultation",
-        ctaDesc: "Book a meeting with our corporate representatives or request private label manufacturing details."
+        ctaTitle: "Schedule an Architectural Consultation",
+        ctaDesc: "Book a virtual or in-person design presentation with our commercial specification team or request our 2026 expo catalog."
     }
 };
 
@@ -3270,6 +4437,97 @@ function initSizeFinishesModal() {
 
     let currentSizeData = null;
 
+    function getExploreRangeUrl(sizeId, sizeData, fin) {
+        if (sizeId === 'technical') {
+            return 'collections.html';
+        }
+
+        const finName = (fin.name || '').toLowerCase();
+        const finBadge = (fin.finishBadge || '').toLowerCase();
+        const finKey = (fin.key || '').toLowerCase();
+        const finFolder = (fin.folder || '').toLowerCase();
+        const combined = `${finName} ${finBadge} ${finKey} ${finFolder}`;
+
+        let sizeVal = '';
+        let catVal = '';
+        let lookVal = '';
+        let finishVal = '';
+
+        // 1. Resolve Size / Category
+        if (sizeId === 'mosaic') {
+            catVal = 'mosaic';
+            if (combined.includes('matt')) {
+                finishVal = 'matt';
+            } else {
+                finishVal = 'polished';
+            }
+            return `collections.html?category=${encodeURIComponent(catVal)}&finish=${encodeURIComponent(finishVal)}`;
+        } else if (sizeId === '30x30') {
+            catVal = 'ceramic-wall';
+            sizeVal = '30x30 cm';
+            finishVal = 'matt';
+            return `collections.html?category=${encodeURIComponent(catVal)}&size=${encodeURIComponent(sizeVal)}&finish=${encodeURIComponent(finishVal)}`;
+        } else if (sizeId === '7.5x30') {
+            sizeVal = '7.5x30 cm';
+        } else if (sizeId === '10x20') {
+            sizeVal = '10x20 cm';
+        } else if (sizeId === '120x120') {
+            sizeVal = '120x120 cm';
+        } else if (sizeId === '15x90') {
+            sizeVal = '15x90 cm';
+            finishVal = 'matt';
+            return `collections.html?size=${encodeURIComponent(sizeVal)}&finish=${encodeURIComponent(finishVal)}`;
+        } else {
+            sizeVal = `${sizeId} cm`;
+        }
+
+        // Special handling for 30x60 collections that represent look
+        if (sizeId === '30x60') {
+            if (combined.includes('mosaic')) {
+                return `collections.html?size=${encodeURIComponent(sizeVal)}&look=mosaic`;
+            } else if (combined.includes('subway')) {
+                return `collections.html?size=${encodeURIComponent(sizeVal)}&look=subway`;
+            } else if (combined.includes('traditional') || combined.includes('decor')) {
+                return `collections.html?size=${encodeURIComponent(sizeVal)}`;
+            }
+        }
+
+        // 2. Resolve Finish
+        if (combined.includes('carving')) {
+            finishVal = 'carving';
+        } else if (combined.includes('super highgloss') || combined.includes('super glossy') || combined.includes('high gloss') || combined.includes('lux')) {
+            finishVal = 'lux-surface';
+        } else if (combined.includes('satin') || combined.includes('baby satin')) {
+            finishVal = 'satin';
+        } else if (combined.includes('atrovel') || combined.includes('digi matt')) {
+            finishVal = 'digi-matt';
+        } else if (combined.includes('punch matt') || combined.includes('punch finish')) {
+            finishVal = 'punch-matt';
+        } else if (combined.includes('rustic') || combined.includes('structure')) {
+            finishVal = 'textured';
+        } else if (combined.includes('glossy') || combined.includes('polish')) {
+            finishVal = 'polished';
+        } else if (combined.includes('matt')) {
+            finishVal = 'matt';
+        }
+
+        // Specific overrides for 60x120 finishes
+        if (sizeId === '60x120') {
+            if (combined.includes('stark gloss')) finishVal = 'polished';
+            else if (combined.includes('stark')) finishVal = 'matt';
+            else if (combined.includes('vectro')) finishVal = 'matt';
+            else if (combined.includes('zion')) finishVal = 'satin';
+        }
+
+        const params = new URLSearchParams();
+        if (sizeVal) params.set('size', sizeVal);
+        if (catVal) params.set('category', catVal);
+        if (lookVal) params.set('look', lookVal);
+        if (finishVal) params.set('finish', finishVal);
+
+        return `collections.html?${params.toString()}`;
+    }
+
     function openSizeFinishesModal(sizeId) {
         if (!window.SIZE_FINISHES_DATA) {
             console.warn('SIZE_FINISHES_DATA not loaded');
@@ -3299,7 +4557,7 @@ function initSizeFinishesModal() {
         }
 
         // Render Grid directly without filters
-        renderFinishesGrid();
+        renderFinishesGrid(sizeId);
 
         // Open modal
         modal.classList.add('is-open');
@@ -3313,8 +4571,9 @@ function initSizeFinishesModal() {
         document.body.style.overflow = '';
     }
 
-    function renderFinishesGrid() {
+    function renderFinishesGrid(sizeId) {
         if (!gridContainer || !currentSizeData) return;
+        const activeSizeId = sizeId || (currentSizeData ? currentSizeData.sizeId : '');
 
         const finishes = currentSizeData.finishes || [];
         let cardsHtml = '';
@@ -3403,7 +4662,7 @@ function initSizeFinishesModal() {
                                 data-finish-name="${fin.name}">
                             <i class="fa-solid fa-file-invoice mr-6"></i> Request PDF &amp; Swatch for this Finish
                         </button>
-                        <a href="collections.html?size=${encodeURIComponent(currentSizeData.sizeLabel.split(' ')[0])}" class="btn btn-outline btn-sm">
+                        <a href="${getExploreRangeUrl(activeSizeId, currentSizeData, fin)}" class="btn btn-outline btn-sm">
                             <i class="fa-solid fa-compass mr-6"></i> Explore Range
                         </a>
                     </div>
@@ -3497,6 +4756,18 @@ function initSizeFinishesModal() {
                 openSizeFinishesModal(sizeId);
             }
         });
+    });
+
+    // Event delegation fallback to guarantee click always triggers
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-range-btn');
+        if (btn) {
+            e.preventDefault();
+            const sizeId = btn.getAttribute('data-size-id');
+            if (sizeId) {
+                openSizeFinishesModal(sizeId);
+            }
+        }
     });
 
     // Expose for external calls
