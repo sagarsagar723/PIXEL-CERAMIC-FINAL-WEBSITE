@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Anti-Gravity Physics Preloader Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #0b0e14;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+}
+
+#preloader-container {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: #0b0e14;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;
+}
+
+#preloader-container.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#webgl-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 2D Brand Overlay on top of 3D Scene */
+.preloader-ui-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 48px 24px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.brand-header {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-12px);
+    animation: uiFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+.brand-logo {
+    max-width: 240px;
+    width: 75vw;
+    height: auto;
+    filter: drop-shadow(0 0 25px rgba(197, 168, 128, 0.45)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+.brand-meta {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #a39c94;
+    margin-top: 10px;
+}
+
+.preloader-footer {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: uiFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+}
+
+.progress-track {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border-radius: 99px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #967a57, #c5a880 70%, #fff2d9);
+    box-shadow: 0 0 12px rgba(197, 168, 128, 0.85);
+    transition: width 0.08s linear;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8c857e;
+}
+
+.progress-percent {
+    font-weight: 700;
+    color: #c5a880;
+    font-variant-numeric: tabular-nums;
+}
+
+@keyframes uiFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+<script src="assets/three.min.js"></script>
+</head>
+<body>
+
+<div id="preloader-container">
+    <canvas id="webgl-canvas"></canvas>
+    
+    <div class="preloader-ui-overlay">
+        <div class="brand-header">
+            <img src="assets/logo.svg" alt="Pixel Ceramic" class="brand-logo">
+            <div class="brand-meta">Architectural Surfaces &bull; Morbi, India</div>
+        </div>
+        
+        <div class="preloader-footer">
+            <div class="progress-track">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="status-row">
+                <span id="statusText">Zero-G Polarization</span>
+                <span class="progress-percent" id="percentText">0%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main style="padding: 100px; text-align: center;">
+    <h1>Pixel Ceramic Website Ready</h1>
+</main>
+
+<script>
+(function() {
+    const canvas = document.getElementById('webgl-canvas');
+    const container = document.getElementById('preloader-container');
+    const progressBar = document.getElementById('progressBar');
+    const percentText = document.getElementById('percentText');
+    const statusText = document.getElementById('statusText');
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0b0e14, 0.0018);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(0, 0, 420);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x0b0e14, 1);
+
+    // Studio Lighting setup
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const goldSpot = new THREE.PointLight(0xc5a880, 2.8, 800);
+    goldSpot.position.set(0, 50, 260);
+    scene.add(goldSpot);
+
+    const coldRim = new THREE.DirectionalLight(0x78909c, 1.2);
+    coldRim.position.set(-200, 300, -100);
+    scene.add(coldRim);
+
+    // 20 Porcelain Mosaic Pieces (5 columns x 4 rows)
+    const COLS = 5;
+    const ROWS = 4;
+    const TOTAL_PIECES = COLS * ROWS; // 20 distinct pieces
+    const TILE_W = 54;
+    const TILE_H = 42;
+    const TILE_D = 4; // realistic slab thickness
+    const GAP = 2.5;  // grout line gap
+
+    const totalGridW = (COLS * TILE_W) + ((COLS - 1) * GAP);
+    const totalGridH = (ROWS * TILE_H) + ((ROWS - 1) * GAP);
+    const originX = -totalGridW / 2 + TILE_W / 2;
+    const originY = totalGridH / 2 - TILE_H / 2;
+
+    // Generate rich procedural textures for porcelain surfaces
+    function createPorcelainTexture(colorType, index) {
+        const cv = document.createElement('canvas');
+        cv.width = 256;
+        cv.height = 256;
+        const ctx = cv.getContext('2d');
+
+        if (colorType === 'marble') {
+            ctx.fillStyle = '#f6f5f2';
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.strokeStyle = 'rgba(160, 150, 140, 0.35)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, (index * 47) % 256);
+            ctx.bezierCurveTo(80, 100, 160, 40, 256, (index * 73) % 256);
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(197, 168, 128, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        } else if (colorType === 'dark') {
+            ctx.fillStyle = '#181b22';
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.strokeStyle = 'rgba(197, 168, 128, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, (index * 61) % 256);
+            ctx.lineTo(256, (index * 89) % 256);
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = '#dfd7cc';
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(128, 128, 90, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Ceramic subtle gloss border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(0, 0, 256, 256);
+
+        return new THREE.CanvasTexture(cv);
+    }
+
+    const pieces = [];
+    const geom = new THREE.BoxGeometry(TILE_W, TILE_H, TILE_D);
+
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const idx = r * COLS + c;
+            const targetX = originX + c * (TILE_W + GAP);
+            const targetY = originY - r * (TILE_H + GAP);
+            const targetZ = 0;
+
+            const colorTypes = ['marble', 'dark', 'marble', 'gold-travertine'];
+            const cType = colorTypes[(r + c) % colorTypes.length];
+            const tex = createPorcelainTexture(cType, idx);
+
+            const mat = new THREE.MeshStandardMaterial({
+                map: tex,
+                roughness: 0.18,
+                metalness: 0.25,
+                emissive: 0xc5a880,
+                emissiveIntensity: 0.05
+            });
+
+            const mesh = new THREE.Mesh(geom, mat);
+
+            // Initial zero-G anti-gravity scatter parameters
+            const seed = (idx + 1) * 31.7;
+            const initX = (Math.sin(seed) * 260) + (c - 2) * 50;
+            const initY = (Math.cos(seed * 1.3) * 190) + (r - 1.5) * 45;
+            const initZ = (Math.sin(seed * 2.1) * 220) - 40;
+
+            mesh.position.set(initX, initY, initZ);
+            mesh.rotation.set(
+                Math.sin(seed * 0.7) * Math.PI,
+                Math.cos(seed * 0.9) * Math.PI,
+                Math.sin(seed * 1.5) * Math.PI * 2
+            );
+
+            scene.add(mesh);
+
+            pieces.push({
+                mesh: mesh,
+                target: new THREE.Vector3(targetX, targetY, targetZ),
+                initPos: new THREE.Vector3(initX, initY, initZ),
+                initRot: mesh.rotation.clone(),
+                driftSpeed: 0.8 + (idx % 5) * 0.25,
+                driftOffset: idx * 1.2,
+                locked: false,
+                bounceTime: 0
+            });
+        }
+    }
+
+    // Add glowing grout grid backplane
+    const gridBackGeom = new THREE.PlaneGeometry(totalGridW + 12, totalGridH + 12);
+    const gridBackMat = new THREE.MeshBasicMaterial({
+        color: 0xc5a880,
+        transparent: true,
+        opacity: 0
+    });
+    const gridBack = new THREE.Mesh(gridBackGeom, gridBackMat);
+    gridBack.position.z = -2.5;
+    scene.add(gridBack);
+
+    // Particle dust floating in zero gravity
+    const particleCount = 120;
+    const particleGeom = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i += 3) {
+        particlePositions[i] = (Math.random() - 0.5) * 700;
+        particlePositions[i + 1] = (Math.random() - 0.5) * 500;
+        particlePositions[i + 2] = (Math.random() - 0.5) * 500;
+    }
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    const particleMat = new THREE.PointsMaterial({
+        color: 0xc5a880,
+        size: 2.2,
+        transparent: true,
+        opacity: 0.35
+    });
+    const particles = new THREE.Points(particleGeom, particleMat);
+    scene.add(particles);
+
+    // Physics & Loading Progression Controller
+    let progress = 99;
+    let pageLoaded = false;
+    let isLocked = false;
+    let pushThroughStarted = false;
+    const startTime = performance.now();
+
+    window.addEventListener('load', () => { pageLoaded = true; });
+    setTimeout(() => { pageLoaded = true; }, 2200); // 2.2s maximum failsafe
+
+    function easeOutQuad(x) { return 1 - (1 - x) * (1 - x); }
+    function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+
+    let lastTime = performance.now();
+
+    function animate(currentTime) {
+        const delta = (currentTime - lastTime) * 0.001;
+        lastTime = currentTime;
+        const elapsed = (currentTime - startTime) * 0.001;
+
+        // Progress acceleration
+        if (!pageLoaded) {
+            if (progress < 85) {
+                progress += (85 - progress) * 0.045 + 0.3;
+            }
+        } else {
+            progress += (100 - progress) * 0.16 + 1.8;
+        }
+
+        if (progress > 100) progress = 100;
+        const normProgress = progress / 100;
+
+        // Telemetry update
+        const floorP = Math.floor(progress);
+        if (progressBar) progressBar.style.width = floorP + '%';
+        if (percentText) percentText.textContent = floorP + '%';
+
+        if (normProgress < 0.35) {
+            if (statusText) statusText.textContent = 'Zero-G Anti-Gravity Field';
+        } else if (normProgress < 0.88) {
+            if (statusText) statusText.textContent = 'Inverse Magnetic Polarization';
+        } else if (normProgress < 1) {
+            if (statusText) statusText.textContent = 'Tessellation Convergence';
+        } else {
+            if (statusText) statusText.textContent = 'Mosaic Locked';
+        }
+
+        // Inverse Magnetic Attraction Physics
+        // The magnetic pull escalates non-linearly with progress^3
+        const magneticPull = Math.pow(normProgress, 2.8);
+
+        pieces.forEach(p => {
+            const mesh = p.mesh;
+
+            if (normProgress < 0.98) {
+                // Zero-G Harmonic Drift + Rotational Spin
+                const driftX = Math.sin(elapsed * p.driftSpeed + p.driftOffset) * (1 - magneticPull) * 16;
+                const driftY = Math.cos(elapsed * (p.driftSpeed * 1.1) + p.driftOffset) * (1 - magneticPull) * 14;
+                const driftZ = Math.sin(elapsed * 0.9 + p.driftOffset) * (1 - magneticPull) * 18;
+
+                // Position interpolation towards target grid slot
+                mesh.position.x = THREE.MathUtils.lerp(p.initPos.x + driftX, p.target.x, magneticPull);
+                mesh.position.y = THREE.MathUtils.lerp(p.initPos.y + driftY, p.target.y, magneticPull);
+                mesh.position.z = THREE.MathUtils.lerp(p.initPos.z + driftZ, p.target.z, magneticPull);
+
+                // Rotation snaps to flat (0, 0, 0)
+                mesh.rotation.x = THREE.MathUtils.lerp(p.initRot.x + (elapsed * 0.5 * (1 - magneticPull)), 0, magneticPull);
+                mesh.rotation.y = THREE.MathUtils.lerp(p.initRot.y + (elapsed * 0.6 * (1 - magneticPull)), 0, magneticPull);
+                mesh.rotation.z = THREE.MathUtils.lerp(p.initRot.z + (elapsed * 0.8 * (1 - magneticPull)), 0, magneticPull);
+
+            } else {
+                // ZERO-DAMPING BOUNCE & TACTILE LOCK PHASE
+                if (!p.locked) {
+                    p.locked = true;
+                    p.bounceTime = 0;
+                }
+
+                p.bounceTime += delta;
+                // High-frequency undamped spring harmonic bounce along Z-axis:
+                // z = A * cos(omega * t) * exp(-zeta * t)
+                const omega = 38.0; // resonant frequency
+                const zeta = 3.5;   // minimal damping for crisp bounce
+                const bounceAmplitude = 12.0;
+                const bounceOffset = bounceAmplitude * Math.cos(omega * p.bounceTime) * Math.exp(-zeta * p.bounceTime);
+
+                mesh.position.set(p.target.x, p.target.y, p.target.z + (p.bounceTime < 0.8 ? bounceOffset : 0));
+                mesh.rotation.set(0, 0, 0);
+            }
+        });
+
+        // Glowing gold grout flash when locked
+        if (normProgress >= 0.98) {
+            if (!isLocked) {
+                isLocked = true;
+                goldSpot.intensity = 5.5; // flash highlight
+            }
+            gridBackMat.opacity = Math.min(gridBackMat.opacity + delta * 2.5, 0.85);
+            goldSpot.intensity = THREE.MathUtils.lerp(goldSpot.intensity, 3.0, 0.05);
+        }
+
+        // Gentle camera float during progress
+        if (!pushThroughStarted) {
+            camera.position.x = Math.sin(elapsed * 0.5) * (1 - normProgress) * 20;
+            camera.position.y = Math.cos(elapsed * 0.6) * (1 - normProgress) * 15;
+            camera.lookAt(0, 0, 0);
+        }
+
+        // FAST CAMERA PUSH-THROUGH TRANSITION
+        if (normProgress >= 1.0) {
+            if (!pushThroughStarted) {
+                pushThroughStarted = true;
+                setTimeout(() => {
+                    // Trigger push-through acceleration
+                    const pushStart = performance.now();
+                    const initialCamZ = camera.position.z;
+
+                    function pushThrough(now) {
+                        const pushT = Math.min((now - pushStart) / 650, 1.0); // 650ms plunge
+                        const eased = Math.pow(pushT, 2.5); // accelerating plunge
+
+                        camera.position.z = THREE.MathUtils.lerp(initialCamZ, -220, eased);
+
+                        if (pushT > 0.4) {
+                            container.classList.add('fade-out');
+                        }
+
+                        if (pushT < 1.0) {
+                            requestAnimationFrame(pushThrough);
+                        } else {
+                            setTimeout(() => {
+                                container.style.display = 'none';
+                                renderer.dispose();
+                            }, 300);
+                        }
+                    }
+                    requestAnimationFrame(pushThrough);
+                }, 350); // brief hold to appreciate the locked tessellation
+            }
+        }
+
+        renderer.render(scene, camera);
+
+        if (!container.classList.contains('fade-out')) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

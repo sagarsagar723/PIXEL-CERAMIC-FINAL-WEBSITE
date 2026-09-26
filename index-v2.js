@@ -1,4 +1,45 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initSiteInteractivity() {
+
+    /* ==========================================================================
+       0. Luxury Minimalist Site Preloader Controller (Liquid Water Gold Fill)
+       ========================================================================== */
+    const sitePreloader = document.getElementById('site-preloader');
+    if (sitePreloader) {
+        let isDismissed = false;
+        function dismissPreloader() {
+            if (isDismissed) return;
+            isDismissed = true;
+            sitePreloader.classList.add('is-complete');
+            setTimeout(() => {
+                sitePreloader.classList.add('fade-out');
+                document.body.classList.remove('preloader-active');
+                setTimeout(() => {
+                    if (sitePreloader && sitePreloader.parentNode) {
+                        sitePreloader.style.display = 'none';
+                    }
+                }, 750);
+            }, 300);
+        }
+
+        // Wait for liquid animation to complete filling (~2.2s)
+        const minFillTime = 2200;
+        const pageStartTime = performance.now();
+        function checkReadyAndDismiss() {
+            const elapsed = performance.now() - pageStartTime;
+            if (elapsed >= minFillTime) {
+                dismissPreloader();
+            } else {
+                setTimeout(dismissPreloader, minFillTime - elapsed);
+            }
+        }
+
+        if (document.readyState === 'complete') {
+            checkReadyAndDismiss();
+        } else {
+            window.addEventListener('load', checkReadyAndDismiss);
+            setTimeout(checkReadyAndDismiss, 3500); // Failsafe
+        }
+    }
 
     /* ==========================================================================
        1. Navigation Scroll & Active Page Tracking
@@ -802,6 +843,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modalNextBtn) modalNextBtn.classList.add('hidden');
             }
 
+            const modalWrapper = imageModal ? imageModal.querySelector('.preview-modal-wrapper') : null;
+            if (modalWrapper) modalWrapper.classList.add('is-loading');
+
+            modalImg.decoding = 'async';
+            modalImg.onload = () => {
+                if (modalWrapper) modalWrapper.classList.remove('is-loading');
+            };
+            modalImg.onerror = () => {
+                if (modalWrapper) modalWrapper.classList.remove('is-loading');
+            };
             modalImg.src = activeItem.displayImg;
             if (modalCaption) {
                 modalCaption.textContent = activeItem.label;
@@ -823,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             badgeHtml = `<div class="preview-badge" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem; transition: background 0.2s ease;"><i class="fa-solid fa-eye"></i></div>`;
                         }
 
-                        thumb.innerHTML = `<img src="${item.image}" alt="${item.label}">${badgeHtml}`;
+                        thumb.innerHTML = `<img src="${item.image}" alt="${item.label}" loading="lazy" decoding="async">${badgeHtml}`;
                         thumb.addEventListener('click', (e) => {
                             e.stopPropagation();
                             currentVariantIdxForModal = itemIdx;
@@ -963,6 +1014,47 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Architectural color mapping for instant swatch rendering without network overhead
+        function getColorHex(colorName, explicitCode) {
+            if (explicitCode && explicitCode.startsWith('#')) return explicitCode;
+            if (!colorName) return '#c5a880';
+            const name = colorName.toLowerCase().trim();
+            const map = {
+                'white': '#f5f5f5',
+                'off-white': '#f8f7f2',
+                'ivory': '#fffff0',
+                'beige': '#e6d7c3',
+                'cream': '#fdfbf7',
+                'grey': '#9e9e9e',
+                'gray': '#9e9e9e',
+                'light-grey': '#cfd4d9',
+                'dark-grey': '#4f5459',
+                'black': '#212121',
+                'nero': '#1a1a1a',
+                'brown': '#795548',
+                'choco': '#4e342e',
+                'cotto': '#b25d38',
+                'terracotta': '#c06c52',
+                'blue': '#2c5d88',
+                'aqua': '#3a95a8',
+                'green': '#4a7c59',
+                'emerald': '#1b694b',
+                'olive': '#556b2f',
+                'gold': '#c5a880',
+                'yellow': '#e2b342',
+                'sand': '#d8c29d',
+                'taupe': '#8b7d72',
+                'wood': '#8d6e63',
+                'walnut': '#5d4037',
+                'oak': '#a1887f',
+                'ash': '#b0bec5'
+            };
+            for (const k in map) {
+                if (name.includes(k)) return map[k];
+            }
+            return '#bcaaa4';
+        }
+
         // Render matching products dynamically
         function renderCatalog() {
             catalogGrid.innerHTML = '';
@@ -1074,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="color-options-wrapper">
                             ${product.variants.map((v, vIdx) => `
                                 <span class="color-dot ${vIdx === activeVarIdx ? 'active' : ''}" 
-                                      style="background-image: url('${v.image}');" 
+                                      style="background-color: ${getColorHex(v.color, v.colorCode)};" 
                                       title="${v.label}"
                                       data-image="${v.image}"
                                       data-name="${v.label}"
@@ -1125,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.innerHTML = `
                     <div class="tile-img-wrapper">
-                        <img src="${activeProductImage}" alt="${activeProductName}">
+                        <img src="${activeProductImage}" alt="${activeProductName}" loading="lazy" decoding="async">
                         ${patternTagHtml}
                         <div class="tile-card-actions">
                             <a href="contact.html?product=${encodeURIComponent(activeProductName)}" class="btn btn-white btn-sm">
@@ -1857,6 +1949,138 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
+       6b. Export Page Direct Quotation Inquiry Form Submission
+       ========================================================================== */
+    const exportInquiryForm = document.getElementById('exportInquiryForm');
+    const exportFormFeedback = document.getElementById('exportFormFeedback');
+
+    if (exportInquiryForm) {
+        // Real-time error clearance on typing / selection
+        exportInquiryForm.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                const fg = input.closest('.form-group');
+                if (fg) fg.classList.remove('has-error');
+            });
+            input.addEventListener('change', () => {
+                const fg = input.closest('.form-group');
+                if (fg) fg.classList.remove('has-error');
+            });
+        });
+
+        exportInquiryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Clear previous errors
+            exportInquiryForm.querySelectorAll('.form-group').forEach(fg => fg.classList.remove('has-error'));
+
+            const nameEl = document.getElementById('expName');
+            const companyEl = document.getElementById('expCompany');
+            const emailEl = document.getElementById('expEmail');
+            const countryCodeEl = document.getElementById('expCountryCode');
+            const phoneEl = document.getElementById('expPhone');
+            const countryEl = document.getElementById('expCountry');
+            const volumeEl = document.getElementById('expVolume');
+            const messageEl = document.getElementById('expMessage');
+
+            const name = nameEl ? nameEl.value.trim() : '';
+            const company = companyEl ? companyEl.value.trim() : '';
+            const email = emailEl ? emailEl.value.trim() : '';
+            const countryCode = countryCodeEl ? countryCodeEl.value.trim() : '';
+            const phone = phoneEl ? phoneEl.value.trim() : '';
+            const country = countryEl ? countryEl.value.trim() : '';
+            const volume = volumeEl ? (volumeEl.options[volumeEl.selectedIndex]?.text || volumeEl.value) : '';
+            const message = messageEl ? messageEl.value.trim() : '';
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let hasError = false;
+
+            if (!name) {
+                nameEl?.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!company) {
+                companyEl?.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!email || !emailRegex.test(email)) {
+                emailEl?.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!phone || !countryCode) {
+                phoneEl?.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+            if (!country) {
+                countryEl?.closest('.form-group')?.classList.add('has-error');
+                hasError = true;
+            }
+
+            const feedbackEl = exportFormFeedback || document.getElementById('exportFormFeedback');
+
+            if (hasError) {
+                if (feedbackEl) {
+                    feedbackEl.style.display = 'block';
+                    feedbackEl.className = 'form-feedback error';
+                    if (email && !emailRegex.test(email)) {
+                        feedbackEl.textContent = 'Please enter a valid corporate email address (e.g., name@company.com).';
+                    } else {
+                        feedbackEl.textContent = 'Please fill out all required fields: Your Name, Company Name, Corporate Email, Phone / WhatsApp, and Destination Country.';
+                    }
+                }
+                return;
+            }
+
+            // Disable button and show sending state
+            const submitBtn = exportInquiryForm.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '<i class="fa-solid fa-paper-plane mr-6"></i> Submit International Export Inquiry';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-6"></i> Submitting Quotation Request...';
+            }
+
+            // Process direct submission latency (1.2s)
+            setTimeout(() => {
+                if (feedbackEl) {
+                    feedbackEl.style.display = 'block';
+                    feedbackEl.className = 'form-feedback success';
+                    const compText = company ? ` for <strong>${company}</strong>` : '';
+                    const volText = volume ? ` (Order Volume: <strong>${volume}</strong>)` : '';
+                    feedbackEl.innerHTML = `
+                        <div style="text-align: left; padding: 4px 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.02rem; margin-bottom: 8px; color: #166534;">
+                                <i class="fa-solid fa-circle-check" style="font-size: 1.25rem;"></i>
+                                Export Quotation Request Successfully Submitted!
+                            </div>
+                            <p style="margin-bottom: 8px; color: #1e293b; font-size: 0.92rem; line-height: 1.55;">
+                                Thank you, <strong>${name}</strong>! Your direct export inquiry${compText} shipping to <strong>${country}</strong>${volText} has been registered with our international trade desk.
+                            </p>
+                            <p style="margin-bottom: 0; color: #475569; font-size: 0.88rem; line-height: 1.5;">
+                                An official proforma quotation and freight estimate will be sent to <strong>${email}</strong> within 24 hours. For urgent port coordination, our team can reach you at WhatsApp <strong>${countryCode} ${phone}</strong>.
+                            </p>
+                        </div>
+                    `;
+                }
+
+                // Reset form
+                exportInquiryForm.reset();
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+
+                // Auto-clear message after 14 seconds
+                setTimeout(() => {
+                    if (feedbackEl) {
+                        feedbackEl.style.display = 'none';
+                    }
+                }, 14000);
+
+            }, 1200);
+        });
+    }
+
+    /* ==========================================================================
        10. Global & Homepage FAQ Accordion Interactivity
        ========================================================================== */
     const faqQuestions = document.querySelectorAll('.faq-question');
@@ -1954,11 +2178,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const dots = document.querySelectorAll('.accordion-dot-btn');
         let activeIndex = 0;
         let autoplayTimer = null;
-        const AUTOPLAY_INTERVAL = 4500; // 4.5 seconds rotation
+        let resumeTimer = null;
+        let isTransitioning = false;
+        let isAccordionVisible = true;
+        const AUTOPLAY_INTERVAL = 5000; // 5.0 seconds smooth rotation
 
         function setActiveCategory(index) {
             if (index < 0 || index >= panels.length) return;
+            if (index === activeIndex) return; // Prevent redundant re-triggers
+            
             activeIndex = index;
+            isTransitioning = true;
 
             panels.forEach((panel, i) => {
                 const isActive = (i === index);
@@ -1969,10 +2199,15 @@ document.addEventListener('DOMContentLoaded', () => {
             dots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
             });
+
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 300);
         }
 
         function startAutoplay() {
             stopAutoplay();
+            if (!isAccordionVisible) return;
             autoplayTimer = setInterval(() => {
                 const nextIndex = (activeIndex + 1) % panels.length;
                 setActiveCategory(nextIndex);
@@ -1984,25 +2219,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(autoplayTimer);
                 autoplayTimer = null;
             }
+            if (resumeTimer) {
+                clearTimeout(resumeTimer);
+                resumeTimer = null;
+            }
+        }
+
+        function pauseAndResume(delay = 7000) {
+            stopAutoplay();
+            if (!isAccordionVisible) return;
+            resumeTimer = setTimeout(() => {
+                startAutoplay();
+            }, delay);
         }
 
         // Panel click interactions
         panels.forEach((panel, index) => {
             panel.addEventListener('click', (e) => {
-                // If user clicks a link inside the expanded card, allow standard navigation
+                // If user clicks a link or CTA button inside the card, allow standard navigation
                 if (e.target.closest('a') || e.target.closest('button')) {
                     return;
                 }
+                if (isTransitioning) return;
                 setActiveCategory(index);
-                startAutoplay(); // Reset timer on interaction
+                pauseAndResume(7500); // Give user 7.5s to read specifications before resuming autoplay
             });
 
             // Keyboard accessibility
             panel.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
+                    if (isTransitioning) return;
                     setActiveCategory(index);
-                    startAutoplay();
+                    pauseAndResume(7500);
                 }
             });
         });
@@ -2012,20 +2261,52 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.addEventListener('click', () => {
                 const targetIdx = parseInt(dot.getAttribute('data-target'), 10);
                 if (!isNaN(targetIdx)) {
+                    if (isTransitioning) return;
                     setActiveCategory(targetIdx);
-                    startAutoplay();
+                    pauseAndResume(7500);
                 }
             });
         });
 
-        // Pause autoplay on hover, resume on mouse leave
+        // Pause autoplay on mouse hover, resume smoothly on mouse leave
         const accordionWrapper = categoryAccordion.closest('.categories-accordion-wrapper') || categoryAccordion;
-        accordionWrapper.addEventListener('mouseenter', stopAutoplay);
-        accordionWrapper.addEventListener('mouseleave', startAutoplay);
-        accordionWrapper.addEventListener('touchstart', stopAutoplay, { passive: true });
+        accordionWrapper.addEventListener('mouseenter', () => {
+            stopAutoplay();
+        });
 
-        // Start autoplay on initialization
-        startAutoplay();
+        accordionWrapper.addEventListener('mouseleave', () => {
+            if (isAccordionVisible) {
+                pauseAndResume(2500);
+            }
+        });
+
+        // Touch interactions for mobile / tablet
+        accordionWrapper.addEventListener('touchstart', () => {
+            stopAutoplay();
+        }, { passive: true });
+
+        accordionWrapper.addEventListener('touchend', () => {
+            if (isAccordionVisible) {
+                pauseAndResume(7000);
+            }
+        }, { passive: true });
+
+        // IntersectionObserver: Only rotate when accordion is actively visible in viewport
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    isAccordionVisible = entry.isIntersecting;
+                    if (entry.isIntersecting) {
+                        startAutoplay();
+                    } else {
+                        stopAutoplay();
+                    }
+                });
+            }, { threshold: 0.2 });
+            observer.observe(accordionWrapper);
+        } else {
+            startAutoplay();
+        }
     }
 
 
@@ -2433,16 +2714,49 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!calcTileSelect || !calcAreaInput) return;
         
         const tileConfig = {
+            // Glazed Porcelain (GVT / PGVT)
             "600x1200_gvt": { label: "600x1200mm Porcelain GVT", sqmBox: 1.44, pcsBox: 2, kgBox: 29.5, boxesPlt: 32, maxBoxesFcl: 928 },
             "600x600_gvt": { label: "600x600mm Porcelain GVT", sqmBox: 1.44, pcsBox: 4, kgBox: 28.5, boxesPlt: 40, maxBoxesFcl: 960 },
-            "800x1600_slab": { label: "800x1600mm Sintered Slab", sqmBox: 2.56, pcsBox: 2, kgBox: 54.0, boxesPlt: 28, maxBoxesFcl: 504 },
-            "1200x2400_slab": { label: "1200x2400mm Sintered Slab", sqmBox: 2.88, pcsBox: 1, kgBox: 62.0, boxesPlt: 20, maxBoxesFcl: 120 },
             "800x800_gvt": { label: "800x800mm Porcelain GVT", sqmBox: 1.28, pcsBox: 2, kgBox: 26.3, boxesPlt: 50, maxBoxesFcl: 1050 },
             "1200x1200_gvt": { label: "1200x1200mm Porcelain GVT", sqmBox: 2.88, pcsBox: 2, kgBox: 59.0, boxesPlt: 28, maxBoxesFcl: 444 },
+            "1000x1000_gvt": { label: "1000x1000mm Porcelain GVT", sqmBox: 2.00, pcsBox: 2, kgBox: 42.0, boxesPlt: 32, maxBoxesFcl: 640 },
+            "300x1200_gvt": { label: "300x1200mm Porcelain GVT", sqmBox: 1.44, pcsBox: 4, kgBox: 30.8, boxesPlt: 36, maxBoxesFcl: 864 },
+            "300x600_gvt": { label: "300x600mm Porcelain GVT", sqmBox: 0.90, pcsBox: 5, kgBox: 17.8, boxesPlt: 64, maxBoxesFcl: 1536 },
+
+            // Monumental Sintered Stone Slabs
+            "1600x3200_slab": { label: "1600x3200mm Mega Sintered Slab", sqmBox: 5.12, pcsBox: 1, kgBox: 110.0, boxesPlt: 14, maxBoxesFcl: 70 },
+            "1200x2400_slab": { label: "1200x2400mm Sintered Slab", sqmBox: 2.88, pcsBox: 1, kgBox: 62.0, boxesPlt: 20, maxBoxesFcl: 120 },
+            "1200x1800_slab": { label: "1200x1800mm Sintered Slab", sqmBox: 2.16, pcsBox: 1, kgBox: 46.5, boxesPlt: 30, maxBoxesFcl: 420 },
+            "800x1600_slab": { label: "800x1600mm Sintered Slab", sqmBox: 2.56, pcsBox: 2, kgBox: 54.0, boxesPlt: 28, maxBoxesFcl: 504 },
+
+            // Wooden Plank Porcelain
             "200x1200_wood": { label: "200x1200mm Wood Planks", sqmBox: 1.20, pcsBox: 5, kgBox: 24.7, boxesPlt: 42, maxBoxesFcl: 1092 },
+            "150x900_wood": { label: "150x900mm Wood Planks", sqmBox: 1.08, pcsBox: 8, kgBox: 21.5, boxesPlt: 48, maxBoxesFcl: 1248 },
+            "200x1000_wood": { label: "200x1000mm Wood Planks", sqmBox: 1.00, pcsBox: 5, kgBox: 21.0, boxesPlt: 48, maxBoxesFcl: 1200 },
+
+            // Ceramic Architectural Wall Surfaces
+            "300x900_wall": { label: "300x900mm Ceramic Wall", sqmBox: 1.08, pcsBox: 4, kgBox: 18.5, boxesPlt: 48, maxBoxesFcl: 1248 },
             "300x600_wall": { label: "300x600mm Ceramic Wall", sqmBox: 1.44, pcsBox: 8, kgBox: 23.0, boxesPlt: 40, maxBoxesFcl: 1160 },
+            "300x450_wall": { label: "300x450mm Ceramic Wall", sqmBox: 0.81, pcsBox: 6, kgBox: 13.0, boxesPlt: 72, maxBoxesFcl: 1872 },
+            "250x500_wall": { label: "250x500mm Ceramic Wall", sqmBox: 1.00, pcsBox: 8, kgBox: 15.0, boxesPlt: 64, maxBoxesFcl: 1664 },
+            "200x600_wall": { label: "200x600mm Ceramic Wall", sqmBox: 0.96, pcsBox: 8, kgBox: 15.5, boxesPlt: 64, maxBoxesFcl: 1664 },
+            "200x200_wall": { label: "200x200mm Ceramic Wall", sqmBox: 1.00, pcsBox: 25, kgBox: 14.5, boxesPlt: 80, maxBoxesFcl: 2000 },
+
+            // Artisanal Subway & Mosaic Formats
             "75x300_subway": { label: "75x300mm Subway Tiles", sqmBox: 0.99, pcsBox: 44, kgBox: 12.5, boxesPlt: 96, maxBoxesFcl: 2304 },
-            "600x1200_outdoor20": { label: "600x1200x20mm Outdoor Paver", sqmBox: 0.72, pcsBox: 1, kgBox: 32.5, boxesPlt: 32, maxBoxesFcl: 832 }
+            "100x300_subway": { label: "100x300mm Subway Tiles", sqmBox: 0.99, pcsBox: 33, kgBox: 12.5, boxesPlt: 96, maxBoxesFcl: 2304 },
+            "75x150_subway": { label: "75x150mm Subway Tiles", sqmBox: 0.45, pcsBox: 40, kgBox: 6.5, boxesPlt: 160, maxBoxesFcl: 3840 },
+            "300x300_mosaic": { label: "300x300mm Mosaic Sheets", sqmBox: 1.00, pcsBox: 11, kgBox: 12.0, boxesPlt: 72, maxBoxesFcl: 2160 },
+
+            // Heavy Duty 20mm Outdoor Pavers
+            "600x1200_outdoor20": { label: "600x1200x20mm Outdoor Paver", sqmBox: 0.72, pcsBox: 1, kgBox: 32.5, boxesPlt: 32, maxBoxesFcl: 832 },
+            "600x600_outdoor20": { label: "600x600x20mm Outdoor Paver", sqmBox: 0.72, pcsBox: 2, kgBox: 32.5, boxesPlt: 32, maxBoxesFcl: 832 },
+            "600x900_outdoor20": { label: "600x900x20mm Outdoor Paver", sqmBox: 0.54, pcsBox: 1, kgBox: 24.5, boxesPlt: 44, maxBoxesFcl: 1056 },
+
+            // Double Charge Vitrified & Soluble Salt
+            "600x600_double": { label: "600x600mm Double Charge", sqmBox: 1.44, pcsBox: 4, kgBox: 26.5, boxesPlt: 40, maxBoxesFcl: 1040 },
+            "800x800_double": { label: "800x800mm Double Charge", sqmBox: 1.28, pcsBox: 2, kgBox: 26.5, boxesPlt: 50, maxBoxesFcl: 1050 },
+            "600x600_soluble": { label: "600x600mm Soluble Salt", sqmBox: 1.44, pcsBox: 4, kgBox: 24.5, boxesPlt: 42, maxBoxesFcl: 1092 }
         };
 
         function recalculateContainerLoad() {
@@ -2451,12 +2765,25 @@ document.addEventListener('DOMContentLoaded', () => {
             let area = parseFloat(calcAreaInput.value) || 0;
             const unit = calcUnitSelect ? calcUnitSelect.value : 'sqm';
 
+            const cfg = tileConfig[tileKey] || tileConfig["600x1200_gvt"];
+
+            // If area is 0 or empty, display initial zero state cleanly
+            if (area <= 0) {
+                if (cntResContainers) cntResContainers.textContent = "0 x 20' FCL";
+                if (cntResBoxes) cntResBoxes.textContent = "0";
+                if (cntResPcs) cntResPcs.textContent = "0 Total Pieces";
+                if (cntResPallets) cntResPallets.textContent = "0 Pallets";
+                if (cntResBoxesPerPlt) cntResBoxesPerPlt.textContent = `${cfg.boxesPlt} Boxes / Pallet`;
+                if (cntResWeight) cntResWeight.textContent = "0.0 MT";
+                if (cntResWtPerCnt) cntResWtPerCnt.textContent = "~0.0 MT / Container";
+                if (cntResContainerNote) cntResContainerNote.textContent = "Enter required area above";
+                return;
+            }
+
             let areaInSqm = area;
             if (unit === 'sqft') {
                 areaInSqm = area / 10.7639; // convert sqft to sqm
             }
-
-            const cfg = tileConfig[tileKey] || tileConfig["600x1200_gvt"];
 
             // Calculations
             const totalBoxes = Math.ceil(areaInSqm / cfg.sqmBox);
@@ -2479,6 +2806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cntResBoxesPerPlt) cntResBoxesPerPlt.textContent = `${cfg.boxesPlt} Boxes / Pallet`;
             if (cntResWeight) cntResWeight.textContent = `${totalGrossWeightMT.toFixed(1)} MT`;
             if (cntResWtPerCnt) cntResWtPerCnt.textContent = `~${avgWtPerCnt} MT / Container`;
+            if (cntResContainerNote) cntResContainerNote.textContent = fclCount === 1 ? "Full Container Load (FCL)" : "Full Container Loads (FCL)";
 
             // Auto-populate inquiry message when clicking request quote
             if (btnQuoteWithEstimate) {
@@ -2505,12 +2833,22 @@ document.addEventListener('DOMContentLoaded', () => {
         calcTileSelect.addEventListener('change', recalculateContainerLoad);
         if (calcTargetRegion) calcTargetRegion.addEventListener('change', recalculateContainerLoad);
         calcAreaInput.addEventListener('input', recalculateContainerLoad);
+        calcAreaInput.addEventListener('focus', function() {
+            if (this.value === '0') this.select();
+        });
         if (calcUnitSelect) calcUnitSelect.addEventListener('change', recalculateContainerLoad);
 
         recalculateContainerLoad();
     })();
 
-});
+} // end initSiteInteractivity
+
+// Auto-initialize site interactivity reliably
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSiteInteractivity);
+} else {
+    initSiteInteractivity();
+}
 
 
 /* ==========================================================================
