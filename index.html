@@ -19,24 +19,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- CSS Stylesheet -->
-    <link rel="stylesheet" href="index.css?v=11.12.0">
+    <link rel="stylesheet" href="index.css?v=11.13.0">
     <!-- Preload Hero Banner Background for Instant Rendering -->
     <link rel="preload" as="image" href="assets/slider/1. Architectural surfaces engineered for spaces.jpg">
 </head>
 <body>
-    <!-- Pixel Ceramic - Golden Border Trace Preloader -->
+    <!-- Pixel Ceramic - Golden Border Trace & White Logo Pop-Out Preloader -->
     <div class="preloader-overlay" id="preloader" aria-hidden="true">
         <div class="logo-container">
-            <!-- SVG containing the text elements for the trace animation -->
-            <svg width="100%" height="100%" viewBox="0 0 380 150" role="img" aria-label="Pixel Ceramic - Inspiring Homes">
-                <!-- MAIN TRACED FONT: PIXEL -->
-                <text x="10" y="95" class="snake-text">PIXEL</text>
-                <!-- REGISTERED MARK -->
-                <text x="305" y="45" font-family="'Montserrat', sans-serif" font-weight="400" font-size="16" class="fade-element">®</text>
-                <!-- TAGLINE -->
-                <text x="12" y="130" font-family="'Montserrat', sans-serif" font-weight="400" font-size="14" letter-spacing="3" class="fade-element">INSPIRING HOMES</text>
-                <!-- TAGLINE SOLID BAR -->
-                <rect x="185" y="125" width="55" height="5" class="fade-element" />
+            <!-- LAYER 1: Initial Black Logo with Golden Comet Border Trace -->
+            <svg class="preloader-black-layer" viewBox="0 0 380 150" role="presentation">
+                <!-- Black base text with subtle ambient gold outline -->
+                <text x="10" y="95" class="black-logo-text">PIXEL</text>
+                <text x="305" y="45" font-family="'Montserrat', sans-serif" font-weight="400" font-size="16" class="black-secondary">®</text>
+                <text x="12" y="130" font-family="'Montserrat', sans-serif" font-weight="400" font-size="14" letter-spacing="3" class="black-secondary">INSPIRING HOMES</text>
+                <rect x="185" y="125" width="55" height="5" class="black-secondary" />
+
+                <!-- The Golden Comet racing around PIXEL -->
+                <text x="10" y="95" class="snake-comet">PIXEL</text>
+            </svg>
+
+            <!-- LAYER 2: Pure White Logo that POPS OUT in place of the black logo -->
+            <svg class="white-logo-pop" viewBox="0 0 380 150" role="img" aria-label="Pixel Ceramic - Inspiring Homes">
+                <text x="10" y="95" class="white-text-main">PIXEL</text>
+                <text x="305" y="45" font-family="'Montserrat', sans-serif" font-weight="400" font-size="16" class="white-secondary">®</text>
+                <text x="12" y="130" font-family="'Montserrat', sans-serif" font-weight="400" font-size="14" letter-spacing="3" class="white-secondary">INSPIRING HOMES</text>
+                <rect x="185" y="125" width="55" height="5" class="white-secondary" />
             </svg>
         </div>
     </div>
@@ -56,7 +64,7 @@
                 }
             }, 850);
         }
-        // Fades out the preloader after 4.5 seconds (allowing text to trace, fill in white, and settle)
+        // Fades out after white logo pops out and settles (4.5s total)
         setTimeout(finishPreloader, 4500);
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function () {
