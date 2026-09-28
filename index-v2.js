@@ -1,35 +1,32 @@
 function initSiteInteractivity() {
 
     /* ==========================================================================
-       0. Luxury Minimalist Site Preloader Controller (Liquid Water Gold Fill)
+       0. Pixel Ceramic Logo Ripple Preloader Controller (Water Fill)
        ========================================================================== */
-    const sitePreloader = document.getElementById('site-preloader');
+    const sitePreloader = document.getElementById('preloader') || document.getElementById('site-preloader');
     if (sitePreloader) {
         let isDismissed = false;
         function dismissPreloader() {
             if (isDismissed) return;
             isDismissed = true;
-            sitePreloader.classList.add('is-complete');
+            sitePreloader.classList.add('fade-out');
+            if (document.body) document.body.classList.remove('preloader-active');
             setTimeout(() => {
-                sitePreloader.classList.add('fade-out');
-                document.body.classList.remove('preloader-active');
-                setTimeout(() => {
-                    if (sitePreloader && sitePreloader.parentNode) {
-                        sitePreloader.style.display = 'none';
-                    }
-                }, 750);
-            }, 300);
+                if (sitePreloader && sitePreloader.parentNode) {
+                    sitePreloader.style.display = 'none';
+                }
+            }, 850);
         }
 
-        // Wait for liquid animation to complete filling (~2.2s)
-        const minFillTime = 2200;
+        // Wait for full ripple wave fill (3s) and final golden highlight (1.5s)
+        const totalAnimationTime = 4500;
         const pageStartTime = performance.now();
         function checkReadyAndDismiss() {
             const elapsed = performance.now() - pageStartTime;
-            if (elapsed >= minFillTime) {
+            if (elapsed >= totalAnimationTime) {
                 dismissPreloader();
             } else {
-                setTimeout(dismissPreloader, minFillTime - elapsed);
+                setTimeout(dismissPreloader, totalAnimationTime - elapsed);
             }
         }
 
@@ -37,7 +34,7 @@ function initSiteInteractivity() {
             checkReadyAndDismiss();
         } else {
             window.addEventListener('load', checkReadyAndDismiss);
-            setTimeout(checkReadyAndDismiss, 3500); // Failsafe
+            setTimeout(checkReadyAndDismiss, 5500); // Failsafe
         }
     }
 
