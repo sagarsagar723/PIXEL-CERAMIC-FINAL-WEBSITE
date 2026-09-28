@@ -32,7 +32,7 @@
         <!-- GSAP 3 & Flip Plugin for Architectural Blueprint Engine -->
     <script src="assets/vendor/gsap.min.js"></script>
     <script src="assets/vendor/Flip.min.js"></script>
-    <link rel="stylesheet" href="index.css?v=11.11.0">
+    <link rel="stylesheet" href="index.css?v=11.12.0">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
@@ -125,12 +125,20 @@
     <link rel="preload" as="image" href="assets/export-header-bg.jpg">
 </head>
 <body class="export-page">
-    <!-- Pixel Ceramic - Logo Ripple Preloader -->
+    <!-- Pixel Ceramic - Golden Border Trace Preloader -->
     <div class="preloader-overlay" id="preloader" aria-hidden="true">
-        <div class="logo-wrapper">
-            <!-- Exact logo provided by the user -->
-            <img src="logo.svg" alt="Pixel Ceramic" class="base-logo">
-            <div class="water-fill"></div>
+        <div class="logo-container">
+            <!-- SVG containing the text elements for the trace animation -->
+            <svg width="100%" height="100%" viewBox="0 0 380 150" role="img" aria-label="Pixel Ceramic - Inspiring Homes">
+                <!-- MAIN TRACED FONT: PIXEL -->
+                <text x="10" y="95" class="snake-text">PIXEL</text>
+                <!-- REGISTERED MARK -->
+                <text x="305" y="45" font-family="'Montserrat', sans-serif" font-weight="400" font-size="16" class="fade-element">®</text>
+                <!-- TAGLINE -->
+                <text x="12" y="130" font-family="'Montserrat', sans-serif" font-weight="400" font-size="14" letter-spacing="3" class="fade-element">INSPIRING HOMES</text>
+                <!-- TAGLINE SOLID BAR -->
+                <rect x="185" y="125" width="55" height="5" class="fade-element" />
+            </svg>
         </div>
     </div>
     <script>
@@ -149,7 +157,7 @@
                 }
             }, 850);
         }
-        // Fades out after fill (3s) and highlight (1.5s) animations fully complete (4.5s total)
+        // Fades out the preloader after 4.5 seconds (allowing text to trace, fill in white, and settle)
         setTimeout(finishPreloader, 4500);
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function () {

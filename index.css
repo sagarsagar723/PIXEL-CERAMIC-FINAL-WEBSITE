@@ -8691,11 +8691,12 @@ body {
 }
 
 /* ==========================================================================
-   PIXEL CERAMIC - LOGO RIPPLE PRELOADER (WATER FILL WITH MIX-BLEND-MODE)
+   PIXEL CERAMIC - GOLDEN BORDER TRACE PRELOADER (SNAKE/COMET EFFECT)
    ========================================================================== */
 :root {
-    --bg-color: #FAF9F6; /* Off-white background */
-    --fill-color: #C2A23E; /* Spontaneous Sprig */
+    --bg-color: #000000; /* Pure Black Background */
+    --gold-accent: #C2A23E; /* Spontaneous Sprig Gold */
+    --text-color: #FFFFFF; /* White Logo Text */
 }
 
 /* Full screen preloader background */
@@ -8728,65 +8729,76 @@ body {
     pointer-events: none !important;
 }
 
-/* Container that wraps the logo tightly */
-.logo-wrapper {
-    position: relative !important;
-    display: inline-block !important;
-    margin: 0 auto !important;
+body.preloader-active {
+    overflow: hidden !important;
 }
 
-/* The exact logo provided by the user. Starts Black. */
-.base-logo {
-    display: block !important;
-    width: clamp(260px, 45vw, 400px) !important; /* Adjust size as needed */
-    max-width: 90vw !important;
+/* Logo Container */
+.logo-container {
+    position: relative !important;
+    width: clamp(280px, 85vw, 380px) !important;
+    aspect-ratio: 380 / 150 !important;
     height: auto !important;
-    
-    /* Initial state has no shadow. Activates at 3 seconds. */
-    filter: drop-shadow(0 0 0px rgba(194, 162, 62, 0));
-    animation: finalHighlight 1.5s ease-out 3s forwards !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
 /* 
-   THE MAGIC: Water Fill Layer 
-   Using 'mix-blend-mode: lighten', this layer turns invisible 
-   over the off-white background, but perfectly colors the black logo.
+   THE FONT TRACE ANIMATION (Snake/Comet Effect)
 */
-.water-fill {
-    position: absolute !important;
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100% !important; 
-    height: 100% !important;
-    pointer-events: none !important;
-    mix-blend-mode: lighten !important; 
+.snake-text {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 76px !important;
+    letter-spacing: 12px !important;
     
-    /* Spontaneous Sprig SVG Wave generated directly in CSS */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 1000'%3E%3Cpath fill='%23C2A23E' d='M0,50 Q50,25 100,50 T200,50 L200,1000 L0,1000 Z'/%3E%3C/svg%3E") !important;
-    background-size: 200px 1000px !important;
-    background-repeat: repeat-x !important;
+    /* Start with transparent fill so only the border is visible */
+    fill: transparent !important; 
     
-    /* Animates diagonally: moves right to ripple, moves up to fill */
-    animation: fillWave 3s cubic-bezier(0.35, 0.1, 0.25, 1) forwards !important;
+    /* The Golden Border */
+    stroke: var(--gold-accent) !important;
+    stroke-width: 2px !important;
+    
+    /* 
+       stroke-dasharray creates the "comet" and the empty gap.
+       First number is comet length, second is the gap length.
+    */
+    stroke-dasharray: 60 200 !important; 
+    
+    /* Adds a subtle glowing light effect to the golden comet */
+    filter: drop-shadow(0 0 6px rgba(194, 162, 62, 0.8)) !important;
+    
+    /* Runs the trace infinitely, then fills the text white after 2.8s */
+    animation: 
+        traceBorder 1.5s linear infinite,
+        fillWhite 0.8s ease-in forwards 2.8s !important;
 }
 
-/* Animation 1: Water rising and rippling */
-@keyframes fillWave {
-    0% { 
-        /* Starts smoothly right below the logo baseline */
-        background-position: 0px 140px; 
-    }
+/* Elements that fade in at the end (Tagline & Registered Mark) */
+.fade-element {
+    fill: var(--text-color) !important;
+    opacity: 0 !important;
+    animation: fadeIn 0.8s ease-in forwards 2.8s !important;
+}
+
+/* Moves the dash offset to create the moving snake/comet illusion */
+@keyframes traceBorder {
+    0% { stroke-dashoffset: 260; }
+    100% { stroke-dashoffset: 0; }
+}
+
+/* Fills the traced fonts with solid white and removes the golden stroke */
+@keyframes fillWhite {
     100% { 
-        /* Rises well above the top of the logo so wave troughs completely clear the top, filling 100% of letters and ® in gold */
-        background-position: 600px -140px; 
+        fill: var(--text-color) !important; 
+        stroke: var(--text-color) !important;
+        filter: drop-shadow(0 0 0px rgba(194, 162, 62, 0)) !important;
     }
 }
 
-/* Animation 2: Final Golden Highlight Glow */
-@keyframes finalHighlight {
-    0% { filter: drop-shadow(0 0 0px rgba(194, 162, 62, 0)); }
-    40% { filter: drop-shadow(0 0 20px rgba(194, 162, 62, 0.8)); } /* Peak Glow */
-    100% { filter: drop-shadow(0 0 12px rgba(194, 162, 62, 0.4)); } /* Settled Glow */
+@keyframes fadeIn {
+    100% { opacity: 1 !important; }
 }
 
 /* ==========================================================================
